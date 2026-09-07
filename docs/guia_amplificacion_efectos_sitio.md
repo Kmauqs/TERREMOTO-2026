@@ -218,18 +218,20 @@ Los `Fa`, `Fv` oficiales dependen de `Aa`, `Av` del municipio; usar tablas A.2.4
 
 ## 7. Estaciones procesadas en este repositorio
 
-| Código | Ubicación aprox. | Lat | Lon | Repi (km) |
-|--------|------------------|-----|-----|-----------|
-| ARMEC | Armenia / área metro | 4.556 | -75.660 | 85 |
-| CCALA | Calarcá | 4.509 | -75.628 | 91 |
-| CBOCA | Zona Bocatoma / corredor Pereira–Armenia | 4.782 | -75.646 | 75 |
-| CIRS | Circasia | 4.643 | -75.606 | 85 |
-| CTRUJ | Trujillo (Valle) | 4.219 | -76.322 | 86 |
-| FLND | Filandia | 4.686 | -75.619 | 82 |
-| MAN1C | Manizales | 5.071 | -75.524 | 85 |
-| SLNT | Salento | 4.637 | -75.570 | 89 |
+| Código | Ubicación aprox. | Lat | Lon | Repi (km) | Observación |
+|--------|------------------|-----|-----|-----------|-------------|
+| ARMEC | Armenia / área metro | 4.556 | -75.660 | 85 | — |
+| CCALA | Calarcá | 4.509 | -75.628 | 91 | — |
+| CBOCA | Pereira / Bocatoma | 4.782 | -75.646 | 75 | **Dato atípico — no usar** (posible estación defectuosa; incompatible con daños en Pereira) |
+| CIRS | Circasia | 4.643 | -75.606 | 85 | — |
+| CTRUJ | Trujillo (Valle) | 4.219 | -76.322 | 86 | — |
+| FLND | Filandia | 4.686 | -75.619 | 82 | — |
+| MAN1C | Manizales | 5.071 | -75.524 | 85 | — |
+| SLNT | Salento | 4.637 | -75.570 | 89 | — |
 
-Las estaciones RNAC suelen estar en sitios relativamente controlados; **no** representan automáticamente el sitio de un edificio en ceniza o lleno. Por eso se aplican los factores de esta guía al espectro registrado o al de amenaza en roca.
+**CBOCA (Pereira):** las amplitudes medidas son atípicas respecto a la propagación del sismo y a los daños reales en Pereira (ciudad más afectada). No emplear este registro como espectro base ni en análisis estadísticos o modelaciones detalladas; para Pereira usar amenaza/microzonificación local u otras estaciones confiables del corredor, aplicando los factores de esta guía según la geología del predio.
+
+Las demás estaciones RNAC suelen estar en sitios relativamente controlados; **no** representan automáticamente el sitio de un edificio en ceniza o lleno. Por eso se aplican los factores de esta guía al espectro registrado o al de amenaza en roca.
 
 ---
 

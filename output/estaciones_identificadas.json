@@ -8,14 +8,17 @@
     "lon": -76.293,
     "depth_km": 103.0
   },
-  "processing": {
+    "processing": {
     "baseline": "demean + detrend lineal + taper coseno 5%",
     "filter": "Butterworth bandpass 4 polos, 0.1–25.0 Hz, zero-phase",
-    "response_spectrum": "SDOF elástico via LTI/lsim (equiv. Newmark/exacto), ζ=0.05, T=0–4.0s, ΔT=0.01s",
+    "response_spectrum": "Nigam-Jennings (numba), damping=0.05, T=0–4.0s, dT=0.01s",
     "acceleration_units_csv": "cm/s^2 y g",
     "spectrum_units": "Sa en g; Sv en cm/s; Sd en cm"
   },
-  "n_stations": 6,
+  "quality_notes": {
+    "CBOCA": "Dato atípico respecto a propagación del sismo y daños reales en Pereira (ciudad más afectada). Estación posiblemente defectuosa. No emplear en análisis estadísticos ni modelaciones detalladas."
+  },
+  "n_stations": 8,
   "stations": [
     {
       "station": "ARMEC",
@@ -57,6 +60,8 @@
       "PGA_H_geo_g": 0.036062,
       "Sa_peak_H_geo_g": 0.12116,
       "T_Sa_peak_s": 0.35,
+      "quality_flag": "ATYPICAL_DO_NOT_USE",
+      "quality_note": "Dato atípico respecto a propagación del sismo y daños reales en Pereira (ciudad más afectada). Estación posiblemente defectuosa. No emplear en análisis estadísticos ni modelaciones detalladas.",
       "signal_csv": "output\\senales\\CBOCA_aceleracion_ajustada.csv",
       "spectrum_csv": "output\\espectros\\CBOCA_espectro_respuesta_elastico.csv",
       "source_file": "SGC2026pqqmro_CBOCA_10.anc"

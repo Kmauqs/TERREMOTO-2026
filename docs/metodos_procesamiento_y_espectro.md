@@ -323,8 +323,19 @@ Archivo .ANC (EW, VER, NS)
 1. **Linealidad:** el espectro es elástico; no modela plastificación ni degradación de rigidez.
 2. **Un grado de libertad:** no representa modos superiores ni irregularidades 3D del edificio.
 3. **Sin deconvolución de sitio:** el espectro es el del movimiento **en la estación**, no en roca aflorante ni en un predio distinto.
-4. **Sin corrección de respuesta del instrumento:** se asume válida la aceleración entregada por el SGC en la banda filtrada.
+4. **Sin corrección de respuesta del instrumento:** se asume válida la aceleración entregada por el SGC en la banda filtrada, **salvo** la salvedad de la estación CBOCA (§9.1).
 5. **Amplificación por efectos de sitio locales** (cenizas, laderas, llenos, etc.) se trata en documento aparte: `guia_amplificacion_efectos_sitio.md`.
+
+### 9.1 Observación de calidad — estación CBOCA (Pereira)
+
+Los datos de la estación **CBOCA** (Pereira / Bocatoma, Risaralda) se consideran un **dato atípico** respecto a:
+
+- la **propagación / atenuación** esperada del sismo SGC2026pqqmro a ~75 km epicentrales, y
+- los **daños reales evidenciados en Pereira**, una de las ciudades más afectadas por el evento,
+
+frente a las amplitudes muy bajas del registro (PGA horizontal del orden de ~0.04 g tras el procesamiento de este proyecto). Existe la posibilidad de que la estación esté **defectuosa** o de que el registro no sea representativo del movimiento fuerte en el casco urbano.
+
+**Recomendación:** no emplear CBOCA en análisis estadísticos, ajustes de relaciones de atenuación, validación de modelos ni modelaciones detalladas de demanda. Conservar el archivo solo como fuente SGC documentada. Preferir estaciones vecinas confiables (p. ej. FLND, CIRS, ARMEC, SLNT, MAN1C) según el objetivo del estudio.
 
 ---
 

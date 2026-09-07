@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Terremoto 10 ago 2026 — Eje Cafetero | Informe técnico</title>
+  <style>
+    :root {
+      --ink: #1a1f24;
+      --muted: #4a5560;
+      --line: #d5dbe3;
+      --bg: #f3f1ec;
+      --card: #ffffff;
+      --accent: #8b4513;
+      --accent-soft: #e8d5c4;
+      --highlight: #f7f0e8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at top, #ebe6dc 0%, var(--bg) 55%),
+        var(--bg);
+      line-height: 1.55;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+    header.hero {
+      border-bottom: 3px solid var(--accent);
+      padding-bottom: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    header.hero p.kicker {
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.75rem;
+      color: var(--accent);
+      margin: 0 0 0.4rem;
+      font-weight: 700;
+    }
+    h1 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      margin: 0 0 0.5rem;
+      line-height: 1.2;
+    }
+    h2 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.35rem;
+      margin: 2.4rem 0 0.85rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--line);
+    }
+    h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1.05rem;
+    }
+    p, li { color: var(--ink); }
+    .muted { color: var(--muted); }
+    a { color: #6b3a12; }
+    a:hover { color: #3d220a; }
+    nav.toc {
+      background: var(--card);
+      border: 1px solid var(--line);
+      padding: 1rem 1.25rem;
+      margin: 1.5rem 0;
+    }
+    nav.toc ol { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      background: var(--card);
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 0.35rem 0.45rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #2c333a;
+      color: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    tr.has-waveform { background: var(--highlight); }
+    tr.atypical-row { background: #fde8e4; outline: 2px solid #b33a2b; outline-offset: -2px; }
+    .alert {
+      background: #fde8e4;
+      border: 1px solid #b33a2b;
+      border-left: 4px solid #b33a2b;
+      padding: 0.75rem 1rem;
+      margin: 0.6rem 0 1rem;
+      font-size: 0.92rem;
+    }
+    .station-card.atypical {
+      border-color: #b33a2b;
+    }
+    .table-wrap {
+      overflow: auto;
+      max-height: 520px;
+      border: 1px solid var(--line);
+      margin: 0.75rem 0;
+    }
+    .note {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .station-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      padding: 1rem 1.1rem 1.25rem;
+      margin: 1.25rem 0;
+    }
+    .station-card .meta {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin: 0 0 0.9rem;
+    }
+    .spectra-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 800px) {
+      .spectra-grid { grid-template-columns: 1fr; }
+    }
+    figure {
+      margin: 0;
+    }
+    figure img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+    figcaption {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.35rem;
+    }
+    .params {
+      background: var(--card);
+      border-left: 4px solid var(--accent);
+      padding: 0.85rem 1rem;
+      margin: 1rem 0;
+    }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    code {
+      background: #ece8e1;
+      padding: 0.1em 0.35em;
+      font-size: 0.92em;
+    }
+    ul.compact li { margin: 0.25rem 0; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <p class="kicker">Ingeniería sísmica · Datos RNAC / SGC</p>
+      <h1>Terremoto del 10 de agosto de 2026 — Eje Cafetero (Colombia)</h1>
+      <p class="muted">
+        Evento <strong>SGC2026pqqmro</strong> · M 7.4 · San José del Palmar (Chocó) ·
+        Acelerogramas, espectros oficiales y productos derivados para evaluación de demanda sísmica.
+        Versión Markdown: <a href="README.md">README.md</a>
+      </p>
+    </header>
+
+    <nav class="toc" aria-label="Contenido">
+      <strong>Contenido</strong>
+      <ol>
+        <li><a href="#resumen">Resumen del sismo</a></li>
+        <li><a href="#sgc">Información recopilada del SGC</a></li>
+        <li><a href="#metodologia">Metodología de procesamiento</a></li>
+        <li><a href="#amplificacion">Factores de amplificación por sitio</a></li>
+        <li><a href="#estaciones">Estaciones — localización y PGA</a></li>
+        <li><a href="#espectros-sgc">Espectros de respuesta obtenidos por el SGC</a></li>
+        <li><a href="#referencias">Referencias</a></li>
+      </ol>
+    </nav>
+
+    <section id="resumen">
+      <h2>1. Resumen del sismo</h2>
+      <div class="table-wrap" style="max-height:none">
+        <table>
+          <tbody>
+            <tr><th>Código de evento</th><td>SGC2026pqqmro</td></tr>
+            <tr><th>Fecha y hora (UTC)</th><td>2026-08-10 · 12:34:27</td></tr>
+            <tr><th>Magnitud</th><td><strong>M 7.4</strong></td></tr>
+            <tr><th>Epicentro</th><td>San José del Palmar, Chocó</td></tr>
+            <tr><th>Latitud / Longitud</th><td>4.99° N / −76.293° W</td></tr>
+            <tr><th>Profundidad</th><td>103 km</td></tr>
+            <tr><th>Región tectónica</th><td>Subducción — <strong>intraslab</strong> (STREC/ShakeMap SGC)</td></tr>
+            <tr><th>Área de interés</th><td>Eje Cafetero (Quindío, Risaralda, Caldas) y municipios aledaños</td></tr>
+            <tr><th>Estaciones con forma de onda en el repo</th><td>8 (ARMEC, CBOCA, CCALA, CIRS, CTRUJ, FLND, MAN1C, SLNT)</td></tr>
+            <tr><th>Estaciones con PGA reportado por SGC</th><td>79 (tabla completa abajo)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        El evento corresponde a un sismo profundo de placa. En el Eje Cafetero, las distancias
+        epicentrales a las estaciones con forma de onda oscilan típicamente entre 75 y 90 km.
+        Las PGA horizontales en estaciones confiables alcanzan demandas elevadas
+        (FLND, CIRS), coherentes con la severidad del movimiento en el corredor cafetero.
+        El ShakeMap SGC reporta, a escala regional, PGA de grilla del orden de ~0.3 g y SA(0.3) hasta ~0.55 g.
+      </p>
+      <div class="alert" id="obs-cboca">
+        <strong>Observación — estación CBOCA (Pereira):</strong>
+        los amplitudes registrados en CBOCA constituyen un <strong>dato atípico</strong>
+        respecto a la propagación esperada del sismo y a los <strong>daños reales evidenciados
+        en Pereira</strong>, ciudad entre las más afectadas. La estación podría estar
+        <strong>defectuosa</strong>. <strong>No se recomienda emplear los datos de CBOCA</strong>
+        en análisis estadísticos, ajustes de atenuación ni modelaciones detalladas de demanda.
+        El registro se conserva solo como archivo fuente SGC, marcado como no confiable.
+      </div>
+    </section>
+
+    <section id="sgc">
+      <h2>2. Información recopilada del Servicio Geológico Colombiano</h2>
+      <div class="table-wrap" style="max-height:none">
+        <table>
+          <thead>
+            <tr><th>Producto</th><th>Descripción</th><th>Archivo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Acelerogramas ANC</td><td>Ocho estaciones RNAC, componentes EW–VER–NS (cm/s²)</td>
+              <td><a href="SGC-Data/">SGC-Data/*.anc</a></td></tr>
+            <tr><td>MiniSEED</td><td>Formas de onda auxiliares</td>
+              <td><a href="SGC-Data/">SGC-Data/*.mseed</a></td></tr>
+            <tr><td>Tabla estaciones–PGA</td><td>Localización y PGA EW/NS/Z (79 estaciones)</td>
+              <td><a href="Espectros/table-Estaciones-Localizacion-PGA.csv">Espectros/table-Estaciones-Localizacion-PGA.csv</a></td></tr>
+            <tr><td>Espectros PSA 5 %</td><td>Gráficos oficiales de pseudoaceleración</td>
+              <td><a href="Espectros/">Espectros/*_PSA5.png</a></td></tr>
+            <tr><td>Espectros DRS 5 %</td><td>Gráficos oficiales de desplazamiento espectral</td>
+              <td><a href="Espectros/">Espectros/*_DRS5.png</a></td></tr>
+            <tr><td>PSA tabular CIRS</td><td>Serie PSA exportada</td>
+              <td><a href="Espectros/CIRS_10_PSA5.csv">CIRS_10_PSA5.csv</a></td></tr>
+            <tr><td>Generalidades SGC</td><td>PDF de aceleraciones / contexto</td>
+              <td><a href="Espectros/SGC%20-%20Sismo%20Generalidades-Aceleraciones%20estacion.pdf">PDF generalidades</a></td></tr>
+            <tr><td>ShakeMap</td><td>Metadatos, estaciones, grilla e incertidumbre</td>
+              <td>
+                <a href="SGC-Data/info.json">info.json</a> ·
+                <a href="SGC-Data/stationlist.json">stationlist.json</a> ·
+                <a href="SGC-Data/grid.xml">grid.xml</a> ·
+                <a href="SGC-Data/uncertainty.xml">uncertainty.xml</a>
+              </td></tr>
+            <tr><td>Productos derivados</td><td>Señales filtradas y espectros recalculados</td>
+              <td><a href="output/senales/">output/senales/</a> · <a href="output/espectros/">output/espectros/</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="metodologia">
+      <h2>3. Metodología de procesamiento de señales</h2>
+      <p>
+        Sobre los acelerogramas <code>.ANC</code> se aplicó una cadena de post-proceso orientada a
+        ingeniería estructural (ObsPy, NumPy, SciPy, Numba):
+      </p>
+      <ol>
+        <li><strong>Corrección de línea base:</strong> demean, detrend lineal y taper coseno (5 %) para extremos ≈ 0.</li>
+        <li><strong>Filtro pasabanda Butterworth</strong> de 4 polos, <strong>0.10–25 Hz</strong>, fase cero (<code>filtfilt</code>).</li>
+        <li><strong>Espectro de respuesta elástico</strong> SDOF, ζ = 5 %, método <strong>Nigam–Jennings (1969)</strong>, T = 0–4 s (ΔT = 0.01 s); media geométrica horizontal EW–NS.</li>
+      </ol>
+      <div class="params">
+        <p style="margin:0">
+          Documento detallado:
+          <a href="docs/metodos_procesamiento_y_espectro.md"><strong>docs/metodos_procesamiento_y_espectro.md</strong></a><br />
+          Código:
+          <a href="procesar_sismo.py"><strong>procesar_sismo.py</strong></a>
+          (<code>python procesar_sismo.py</code>)
+        </p>
+      </div>
+      <h3>Parámetros no incorporados por falta de información</h3>
+      <ul class="compact">
+        <li>Función de transferencia instrumental (<code>TIPO DE EQUIPO</code> no especificado).</li>
+        <li>Deconvolución a roca (sin perfiles V<sub>S</sub> / V<sub>S30</sub> por estación).</li>
+        <li>RotD50/100 por rotación azimutal (se usó media geométrica EW–NS).</li>
+        <li>Respuesta no lineal de sitio y geometría de ruptura / directividad.</li>
+        <li>Condiciones de cimentación o caja del instrumento.</li>
+        <li><strong>CBOCA (Pereira):</strong> registro atípico frente a daños observados;
+            posible defecto instrumental — excluir de análisis estadísticos y modelaciones
+            (ver <a href="#obs-cboca">observación</a>).</li>
+      </ul>
+      <p class="note">
+        El movimiento procesado es el registrado en la estación, no necesariamente el de un predio
+        con geología local distinta.
+      </p>
+    </section>
+
+    <section id="amplificacion">
+      <h2>4. Factores de amplificación por efectos de sitio</h2>
+      <p>
+        Factores centrales recomendados para escalar un espectro base:
+        S<sub>a,sitio</sub>(T) = F<sub>a</sub>(T) · S<sub>a,base</sub>(T).
+      </p>
+      <div class="table-wrap" style="max-height:none">
+        <table>
+          <thead>
+            <tr>
+              <th>Condición de sitio</th>
+              <th>Fa(PGA)</th><th>Fa(0.3 s)</th><th>Fa(1.0 s)</th><th>Fa(3.0 s)</th><th>Fv*</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Roca / basamento</td><td>1.00</td><td>1.00</td><td>1.00</td><td>1.00</td><td>1.00</td></tr>
+            <tr><td>Corona de laderas</td><td>1.35</td><td>1.40</td><td>1.15</td><td>1.05</td><td>1.10</td></tr>
+            <tr><td>Pie de laderas</td><td>1.25</td><td>1.45</td><td>1.50</td><td>1.35</td><td>1.40</td></tr>
+            <tr><td>Cenizas bajo espesor (recientes)</td><td>1.40</td><td>1.70</td><td>1.25</td><td>1.05</td><td>1.15</td></tr>
+            <tr><td>Cenizas intermedio/alto (gel siloxano)</td><td>1.55</td><td>2.10</td><td>2.00</td><td>1.60</td><td>1.90</td></tr>
+            <tr><td>Fluvio-lacustres</td><td>1.45</td><td>1.80</td><td>2.20</td><td>2.00</td><td>2.10</td></tr>
+            <tr><td>Fluviotorrenciales (Fm. Quindío)</td><td>1.50</td><td>1.90</td><td>1.75</td><td>1.40</td><td>1.65</td></tr>
+            <tr><td>Llenos antrópicos</td><td>1.60</td><td>2.00</td><td>1.85</td><td>1.50</td><td>1.75</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Guía completa:
+        <a href="docs/guia_amplificacion_efectos_sitio.md"><strong>docs/guia_amplificacion_efectos_sitio.md</strong></a>
+        · CSV: <a href="output/factores_amplificacion_sitio.csv">factores_amplificacion_sitio.csv</a>
+      </p>
+    </section>
+
+    <section id="estaciones">
+      <h2>5. Estaciones sismológicas — localización y PGA (SGC)</h2>
+      <p class="muted">
+        Fuente:
+        <a href="Espectros/table-Estaciones-Localizacion-PGA.csv">table-Estaciones-Localizacion-PGA.csv</a>
+        (79 estaciones).
+      </p>
+      
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Nombre estación</th><th>Red</th><th>Código</th><th>Latitud (°)</th><th>Longitud (°)</th><th>Localizador</th><th>Elevación (msnm)</th><th>Dist. Epi (km)</th><th>Dist. Hip (km)</th><th>PGA EW (cm/s²)</th><th>PGA NS (cm/s²)</th><th>PGA Z (cm/s²)</th></tr></thead>
+        <tbody>
+          <tr><td>Anserma, Caldas, Colombia</td><td>CM</td><td>CANSE</td><td>5.26</td><td>-75.81</td><td>10</td><td>1932</td><td>61</td><td>120</td><td>223.211249</td><td>200.958038</td><td>37.150375</td></tr><tr class="has-waveform atypical-row"><td>Pereira, Risaralda, Colombia</td><td>CM</td><td>CBOCA</td><td>4.78</td><td>-75.65</td><td>10</td><td>1529</td><td>75</td><td>128</td><td>17.251509</td><td>17.908504</td><td>9.050726</td></tr><tr><td>Riosucio, Caldas, Colombia</td><td>CM</td><td>RIO2C</td><td>5.42</td><td>-75.71</td><td>10</td><td>1958</td><td>80</td><td>131</td><td>21.781621</td><td>38.196462</td><td>20.338773</td></tr><tr class="has-waveform"><td>Filandia, Quindio, Colombia</td><td>CM</td><td>FLND</td><td>4.69</td><td>-75.62</td><td>10</td><td>2035</td><td>82</td><td>132</td><td>422.651827</td><td>268.305636</td><td>105.494656</td></tr><tr class="has-waveform"><td>Armenia, Quindio, Colombia</td><td>CM</td><td>ARMEC</td><td>4.56</td><td>-75.66</td><td>10</td><td>1554</td><td>85</td><td>134</td><td>198.706</td><td>221.842718</td><td>80.787229</td></tr><tr class="has-waveform"><td>Circasia, Quindio, Colombia</td><td>CM</td><td>CIRS</td><td>4.64</td><td>-75.61</td><td>10</td><td>1980</td><td>85</td><td>134</td><td>274.918132</td><td>387.878959</td><td>90.065842</td></tr><tr class="has-waveform"><td>Trujillo, Valle del Cauca, Colombia</td><td>CM</td><td>CTRUJ</td><td>4.22</td><td>-76.32</td><td>10</td><td>1388</td><td>86</td><td>134</td><td>93.82152</td><td>129.795181</td><td>81.687681</td></tr><tr class="has-waveform"><td>Manizales, Caldas, Colombia</td><td>CM</td><td>MAN1C</td><td>5.07</td><td>-75.52</td><td>10</td><td>2199</td><td>86</td><td>134</td><td>283.018178</td><td>203.826588</td><td>70.532268</td></tr><tr class="has-waveform"><td>Salento, Quindio, Colombia</td><td>CM</td><td>SLNT</td><td>4.64</td><td>-75.57</td><td>10</td><td>1990</td><td>89</td><td>137</td><td>156.898439</td><td>142.872074</td><td>81.001457</td></tr><tr class="has-waveform"><td>Calarca, Quindio, Colombia</td><td>CM</td><td>CCALA</td><td>4.51</td><td>-75.63</td><td>10</td><td>1795</td><td>91</td><td>138</td><td>70.103647</td><td>87.29783</td><td>43.428818</td></tr><tr><td>Barrio Niza, Manizales, Caldas</td><td>CM</td><td>NIZA</td><td>5.06</td><td>-75.47</td><td>10</td><td>2240</td><td>91</td><td>138</td><td>30.436519</td><td>32.094112</td><td>15.91292</td></tr><tr><td>Villamaria, Caldas, Colombia</td><td>CM</td><td>RECRC</td><td>4.96</td><td>-75.35</td><td>10</td><td>4136</td><td>104</td><td>147</td><td>146.868523</td><td>139.061238</td><td>47.092796</td></tr><tr><td>Villamaria, Caldas, Colombia</td><td>CM</td><td>GUY2C</td><td>5.22</td><td>-75.36</td><td>10</td><td>3605</td><td>106</td><td>148</td><td>18.902624</td><td>23.112626</td><td>14.214193</td></tr><tr><td>Ibague, Tolima, Colombia</td><td>CM</td><td>TOL</td><td>4.59</td><td>-75.32</td><td>10</td><td>2577</td><td>117</td><td>156</td><td>124.408585</td><td>94.987043</td><td>60.711331</td></tr><tr><td>Ibague, Tolima, Colombia</td><td>CM</td><td>IBA1C</td><td>4.45</td><td>-75.24</td><td>10</td><td>1289</td><td>132</td><td>168</td><td>37.601157</td><td>31.051616</td><td>13.929946</td></tr><tr><td>Universidad de Ibague, Tolima, Colombia</td><td>CM</td><td>CUIBA</td><td>4.45</td><td>-75.2</td><td>10</td><td>1130</td><td>135</td><td>170</td><td>39.435368</td><td>28.324752</td><td>21.034229</td></tr><tr><td>Colegio Champagnat, Ibague, Tolima, Colombia</td><td>CM</td><td>CIBA3</td><td>4.43</td><td>-75.19</td><td>10</td><td>1082</td><td>137</td><td>172</td><td>26.786519</td><td>30.089509</td><td>21.86213</td></tr><tr><td>Bahia Malaga, Valle del Cauca, Colombia</td><td>CM</td><td>MAL</td><td>4.01</td><td>-77.33</td><td>10</td><td>112</td><td>159</td><td>190</td><td>187.938805</td><td>212.135796</td><td>84.729315</td></tr><tr><td>Ortega, Tolima, Colombia</td><td>CM</td><td>ORTC</td><td>3.91</td><td>-75.25</td><td>10</td><td>446</td><td>167</td><td>197</td><td>50.517534</td><td>38.984963</td><td>20.971029</td></tr><tr><td>Norcasia, Caldas, Colombia</td><td>CM</td><td>NOR</td><td>5.56</td><td>-74.87</td><td>10</td><td>536</td><td>170</td><td>199</td><td>13.600729</td><td>19.405382</td><td>9.040689</td></tr><tr><td>Bahia Solano, Choco, Colombia</td><td>CM</td><td>SOL</td><td>6.23</td><td>-77.41</td><td>10</td><td>38</td><td>185</td><td>212</td><td>32.905918</td><td>33.29366</td><td>16.987077</td></tr><tr><td>Guaduas, Cundinamarca, Colombia</td><td>CM</td><td>CGUAD</td><td>5.06</td><td>-74.59</td><td>10</td><td>1080</td><td>189</td><td>215</td><td>1.542196</td><td>2.139544</td><td>1.021916</td></tr><tr><td>Puerto Tejada, Cauca, Colombia</td><td>CM</td><td>CPTEJ</td><td>3.23</td><td>-76.41</td><td>10</td><td>995</td><td>197</td><td>222</td><td>93.685166</td><td>86.059672</td><td>45.242164</td></tr><tr><td>Anapoima, Cundinamarca, Colombia</td><td>CM</td><td>CANAP</td><td>4.55</td><td>-74.51</td><td>10</td><td>602</td><td>203</td><td>228</td><td>2.035754</td><td>1.463736</td><td>1.059374</td></tr><tr><td>Prado, Tolima, Colombia</td><td>CM</td><td>CPRAD</td><td>3.75</td><td>-74.89</td><td>10</td><td>309.3</td><td>208</td><td>232</td><td>13.940501</td><td>11.132192</td><td>11.437037</td></tr><tr><td>Planadas, Tolima, Colombia</td><td>CM</td><td>PLNC</td><td>3.19</td><td>-75.65</td><td>10</td><td>1229</td><td>212</td><td>236</td><td>90.586119</td><td>117.022877</td><td>47.06536</td></tr><tr><td>Dabeiba, Antioquia, Colombia</td><td>CM</td><td>DBB</td><td>7.02</td><td>-76.21</td><td>10</td><td>756</td><td>226</td><td>248</td><td>8.876548</td><td>10.192968</td><td>7.037829</td></tr><tr><td>Murindo, Antioquia, Colombia</td><td>CM</td><td>MUAC</td><td>6.99</td><td>-76.7</td><td>10</td><td>67</td><td>227</td><td>249</td><td>57.728211</td><td>51.132592</td><td>25.492731</td></tr><tr><td>Bogota, SGC</td><td>CM</td><td>BOG</td><td>4.64</td><td>-74.08</td><td>10</td><td>2584</td><td>248</td><td>269</td><td>12.272177</td><td>19.01463</td><td>6.992362</td></tr><tr><td>Bogota, SGC</td><td>CM</td><td>BOG</td><td>4.64</td><td>-74.08</td><td>11</td><td>2584</td><td>248</td><td>269</td><td>2.942112</td><td>2.565545</td><td>2.752561</td></tr><tr><td>Cerro Cruz Verde, Chipaque, Cundinamarca, Colombia</td><td>CM</td><td>CVER</td><td>4.52</td><td>-74.07</td><td>10</td><td>3604</td><td>252</td><td>272</td><td>8.126205</td><td>12.078922</td><td>5.147595</td></tr><tr><td>Neiva, Huila, Colombia</td><td>CM</td><td>CNEIV</td><td>2.94</td><td>-75.27</td><td>10</td><td>514</td><td>255</td><td>275</td><td>8.389226</td><td>8.237865</td><td>5.636188</td></tr><tr><td>Embalse Betania, Huila, Colombia</td><td>CM</td><td>CBETA</td><td>2.71</td><td>-75.47</td><td>10</td><td>559</td><td>270</td><td>290</td><td>2.229938</td><td>3.093701</td><td>1.820356</td></tr><tr><td>Embalse de Betania</td><td>CM</td><td>BET</td><td>2.72</td><td>-75.42</td><td>10</td><td>540</td><td>271</td><td>290</td><td>10.708502</td><td>23.069046</td><td>10.619728</td></tr><tr><td>Quetame, Cundinamarca, Colombia</td><td>CM</td><td>CQUET</td><td>4.33</td><td>-73.86</td><td>10</td><td>1486</td><td>280</td><td>298</td><td>2.788586</td><td>3.634843</td><td>2.634735</td></tr><tr><td>Popayan, Cauca, Colombia</td><td>CM</td><td>CPOP3</td><td>2.48</td><td>-76.56</td><td>10</td><td>1880</td><td>281</td><td>299</td><td>62.636359</td><td>83.108323</td><td>28.596944</td></tr><tr><td>Popayan Invias, Cauca, Colombia</td><td>CM</td><td>CPOP2</td><td>2.46</td><td>-76.59</td><td>10</td><td>1772</td><td>284</td><td>302</td><td>11.003502</td><td>11.729187</td><td>5.81011</td></tr><tr><td>Chingaza, Cundinamarca, Colombia</td><td>CM</td><td>CHI</td><td>4.63</td><td>-73.74</td><td>10</td><td>3140</td><td>286</td><td>304</td><td>4.903583</td><td>4.967964</td><td>2.70388</td></tr><tr><td>Uribe, Meta, Colombia</td><td>CM</td><td>URMC</td><td>3.25</td><td>-74.38</td><td>10</td><td>725</td><td>288</td><td>306</td><td>26.277874</td><td>27.099118</td><td>10.430409</td></tr><tr><td>La Plata, Huila, Colombia</td><td>CM</td><td>CPLAT</td><td>2.38</td><td>-75.91</td><td>10</td><td>1094</td><td>293</td><td>311</td><td>4.810707</td><td>3.615775</td><td>3.158388</td></tr><tr><td>Punta Ardita, Choco, Colombia</td><td>CM</td><td>PTA</td><td>7.15</td><td>-77.81</td><td>10</td><td>78</td><td>293</td><td>311</td><td>217.089273</td><td>198.769544</td><td>81.375494</td></tr><tr><td>Lejanias, Meta, Colombia</td><td>CM</td><td>CLEJA</td><td>3.54</td><td>-74.04</td><td>10</td><td>749</td><td>298</td><td>315</td><td>15.022009</td><td>10.544108</td><td>8.774031</td></tr><tr><td>Villavicencio, Meta, Colombia</td><td>CM</td><td>VIL</td><td>4.11</td><td>-73.69</td><td>10</td><td>1109</td><td>304</td><td>322</td><td>27.9875</td><td>28.90748</td><td>7.947038</td></tr><tr><td>El Dorado, Meta, Colombia</td><td>CM</td><td>DORAC</td><td>3.73</td><td>-73.85</td><td>10</td><td>824</td><td>305</td><td>322</td><td>9.797698</td><td>14.447749</td><td>6.307073</td></tr><tr><td>Isla Gorgona, Cauca, Colombia</td><td>CM</td><td>GRPC</td><td>2.97</td><td>-78.17</td><td>10</td><td>13</td><td>307</td><td>324</td><td>34.488195</td><td>57.833208</td><td>20.069542</td></tr><tr><td>Pasto, Narino, Colombia</td><td>CM</td><td>CPAS3</td><td>2.4</td><td>-77.28</td><td>10</td><td>2562</td><td>308</td><td>325</td><td>48.757</td><td>52.282696</td><td>12.887748</td></tr><tr><td>Villavicencio, Meta, Colombia</td><td>CM</td><td>CVIL1</td><td>4.17</td><td>-73.64</td><td>10</td><td>463</td><td>308</td><td>325</td><td>8.860782</td><td>6.685579</td><td>7.229189</td></tr><tr><td>San Jose de Ure, Cordoba, Colombia</td><td>CM</td><td>URE</td><td>7.75</td><td>-75.53</td><td>10</td><td>251</td><td>319</td><td>335</td><td>2.97697</td><td>2.623299</td><td>1.037985</td></tr><tr><td>Garzon, Huila, Colombia</td><td>CM</td><td>CGARZ</td><td>2.19</td><td>-75.61</td><td>10</td><td>970</td><td>321</td><td>337</td><td>13.848381</td><td>17.082957</td><td>11.341928</td></tr><tr><td>Apartado, Antioquia, Colombia</td><td>CM</td><td>APAC</td><td>7.9</td><td>-76.58</td><td>10</td><td>103.9</td><td>325</td><td>341</td><td>8.217261</td><td>6.87377</td><td>4.006384</td></tr><tr><td>Garzon, Huila, Colombia</td><td>CM</td><td>GARC</td><td>2.19</td><td>-75.49</td><td>10</td><td>1999</td><td>325</td><td>341</td><td>50.112204</td><td>35.67262</td><td>22.013931</td></tr><tr><td>Tunja, Boyaca, Colombia</td><td>CM</td><td>CTUN3</td><td>5.55</td><td>-73.36</td><td>10</td><td>2740</td><td>331</td><td>347</td><td>3.386128</td><td>3.593334</td><td>2.490706</td></tr><tr><td>San Agustin, Huila, Colombia</td><td>CM</td><td>CSAGU</td><td>1.88</td><td>-76.28</td><td>10</td><td>1648</td><td>346</td><td>362</td><td>6.839505</td><td>8.6784</td><td>3.895695</td></tr><tr><td>Florencia, Caqueta, Colombia</td><td>CM</td><td>FLO2</td><td>1.58</td><td>-75.65</td><td>10</td><td>365</td><td>386</td><td>400</td><td>6.7445</td><td>6.47639</td><td>3.725863</td></tr><tr><td>Barichara, Santander, Colombia</td><td>CM</td><td>BAR2</td><td>6.59</td><td>-73.18</td><td>10</td><td>1864</td><td>388</td><td>401</td><td>15.742976</td><td>14.424987</td><td>5.763279</td></tr><tr><td>La Macarena, Meta, Colombia</td><td>CM</td><td>MACC</td><td>2.15</td><td>-73.85</td><td>10</td><td>283</td><td>417</td><td>430</td><td>8.286128</td><td>8.550683</td><td>4.145665</td></tr><tr><td>Bucaramanga, Santander, Colombia</td><td>CM</td><td>CBUIS</td><td>7.14</td><td>-73.12</td><td>10</td><td>1015</td><td>425</td><td>437</td><td>7.892645</td><td>10.476652</td><td>6.189857</td></tr><tr><td>San Carlos, Cordoba, Colombia</td><td>CM</td><td>SCLC</td><td>8.77</td><td>-75.69</td><td>10</td><td>56</td><td>426</td><td>438</td><td>1.248952</td><td>1.24954</td><td>0.921409</td></tr><tr><td>Monteria, Cordoba, Colombia</td><td>CM</td><td>CMONT</td><td>8.8</td><td>-75.85</td><td>10</td><td>28</td><td>427</td><td>440</td><td>5.021403</td><td>5.064763</td><td>2.000549</td></tr><tr><td>Yopal, Casanare, Colombia</td><td>CM</td><td>CYOPA</td><td>5.37</td><td>-72.41</td><td>10</td><td>407</td><td>432</td><td>444</td><td>1.516195</td><td>1.541635</td><td>1.294478</td></tr><tr><td>Cufino, Narino</td><td>CM</td><td>CUFI</td><td>1.23</td><td>-77.34</td><td>10</td><td>3653</td><td>435</td><td>447</td><td>6.63365</td><td>7.40435</td><td>5.135799</td></tr><tr><td>Yopal, Casanare, Colombia</td><td>CM</td><td>YPLC</td><td>5.4</td><td>-72.38</td><td>10</td><td>696</td><td>436</td><td>448</td><td>4.089534</td><td>4.977177</td><td>2.173791</td></tr><tr><td>Puerto Gaitan, Meta, Colombia</td><td>CM</td><td>PTGC</td><td>4.2</td><td>-72.13</td><td>10</td><td>170</td><td>470</td><td>481</td><td>2.663571</td><td>2.99257</td><td>1.836747</td></tr><tr><td>Pamplona, Norte de Santander, Colombia</td><td>CM</td><td>PAM</td><td>7.34</td><td>-72.7</td><td>10</td><td>3676</td><td>476</td><td>487</td><td>5.745788</td><td>4.420168</td><td>2.642912</td></tr><tr><td>Pamplona, Norte de Santander, Colombia</td><td>CM</td><td>CPAM3</td><td>7.36</td><td>-72.66</td><td>10</td><td>2422.5</td><td>481</td><td>492</td><td>3.511077</td><td>3.403177</td><td>2.045898</td></tr><tr><td>Cumbal, Narino, Colombia</td><td>CM</td><td>CUM</td><td>0.94</td><td>-77.82</td><td>10</td><td>3420</td><td>482</td><td>493</td><td>12.024235</td><td>11.875961</td><td>4.015009</td></tr><tr><td>Ocana, Norte de Santander, Colombia</td><td>CM</td><td>OCA</td><td>8.24</td><td>-73.32</td><td>10</td><td>1264</td><td>489</td><td>499</td><td>18.479395</td><td>17.95436</td><td>12.076245</td></tr><tr><td>San Jose del Guaviare, Guaviare, Colombia</td><td>CM</td><td>GUA</td><td>2.54</td><td>-72.63</td><td>10</td><td>217</td><td>490</td><td>501</td><td>9.50427</td><td>9.417884</td><td>2.772523</td></tr><tr><td>Tame, Arauca, Colombia</td><td>CM</td><td>TAM</td><td>6.44</td><td>-71.79</td><td>10</td><td>462.1</td><td>524</td><td>534</td><td>2.393285</td><td>2.634225</td><td>1.755118</td></tr><tr><td>Cucuta, Norte de Santander, Colombia</td><td>CM</td><td>CCUC3</td><td>7.87</td><td>-72.5</td><td>10</td><td>439</td><td>528</td><td>538</td><td>7.531373</td><td>8.77271</td><td>3.851066</td></tr><tr><td>San Jacinto, Bolivar, Colombia</td><td>CM</td><td>SJC</td><td>9.9</td><td>-75.18</td><td>10</td><td>596</td><td>560</td><td>569</td><td>1.004386</td><td>0.952197</td><td>0.46786</td></tr><tr><td>Puerto Leguizamo, Putumayo, Colombia</td><td>CM</td><td>PTLC</td><td>0.17</td><td>-74.8</td><td>10</td><td>240</td><td>562</td><td>571</td><td>4.240882</td><td>4.202059</td><td>1.604486</td></tr><tr><td>Ariguani, Magdalena, Colombia</td><td>CM</td><td>ARGC</td><td>9.86</td><td>-74.25</td><td>10</td><td>187</td><td>587</td><td>596</td><td>1.330681</td><td>1.253372</td><td>0.936495</td></tr><tr><td>Arauca, Arauca, Colombia</td><td>CM</td><td>ARAUC</td><td>7.06</td><td>-70.71</td><td>10</td><td>129</td><td>660</td><td>668</td><td>2.91564</td><td>2.318052</td><td>1.784637</td></tr><tr><td>Valledupar, Cesar</td><td>CM</td><td>VALLC</td><td>10.51</td><td>-73.26</td><td>10</td><td>354</td><td>699</td><td>707</td><td>1.591697</td><td>1.367365</td><td>0.913234</td></tr><tr><td>Santa Marta, Magdalena, Colombia</td><td>CM</td><td>SMAR</td><td>11.16</td><td>-74.22</td><td>10</td><td>122</td><td>724</td><td>731</td><td>0.386995</td><td>0.391612</td><td>0.32675</td></tr><tr><td>Uribia, Guajira, Colombia</td><td>CM</td><td>URI</td><td>11.7</td><td>-71.99</td><td>10</td><td>68</td><td>884</td><td>890</td><td>0.77825</td><td>0.588579</td><td>0.418351</td></tr><tr><td>Isla de San Andres, Colombia</td><td>CM</td><td>SAIC</td><td>12.54</td><td>-81.71</td><td>10</td><td>31</td><td>1030</td><td>1035</td><td>0.266364</td><td>0.288563</td><td>0.296636</td></tr><tr><td>Providencia, Archipielago de San Andres, Colombia</td><td>CM</td><td>PRV</td><td>13.38</td><td>-81.36</td><td>10</td><td>38</td><td>1087</td><td>1092</td><td>0.218068</td><td>0.261595</td><td>0.169799</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Filas en tono cálido: estaciones con acelerograma ANC y espectros PSA/DRS en el repositorio.
+    Fila con borde rojo (CBOCA): <strong>dato atípico</strong> — no usar en análisis estadísticos ni modelaciones.</p>
+
+    </section>
+
+    <section id="espectros-sgc">
+      <h2>6. Espectros de respuesta obtenidos por el SGC</h2>
+      <p>
+        Gráficos oficiales de <strong>PSA</strong> (pseudoaceleración) y <strong>DRS</strong>
+        (desplazamiento espectral) al 5 % de amortiguamiento, para las estaciones con forma de onda
+        en este repositorio. Archivos en <a href="Espectros/">Espectros/</a>.
+      </p>
+      
+      <article class="station-card" id="espectro-ARMEC">
+        <h3>ARMEC — Armenia, Quindío</h3>
+        
+        <p class="meta">
+          Acelerograma:
+          <a href="SGC-Data/SGC2026pqqmro_ARMEC_10.anc">SGC2026pqqmro_ARMEC_10.anc</a>
+          · Espectros oficiales SGC (ζ = 5 %)
+        </p>
+        <div class="spectra-grid">
+          <figure>
+            <img src="Espectros/ARMEC_10_PSA5.png" alt="PSA 5% estación ARMEC" loading="lazy" />
+            <figcaption>Pseudoaceleración espectral (PSA) — 5 % amortiguamiento</figcaption>
+          </figure>
+          <figure>
+            <img src="Espectros/ARMEC_10_DRS5.png" alt="DRS 5% estación ARMEC" loading="lazy" />
+            <figcaption>Espectro de desplazamiento (DRS) — 5 % amortiguamiento</figcaption>
+          </figure>
+        </div>
+      </article>
+
+      <article class="station-card atypical" id="espectro-CBOCA">
+        <h3>CBOCA — Pereira / Bocatoma, Risaralda — DATO ATÍPICO</h3>
+        
+        <div class="alert">
+          <strong>Observación de calidad:</strong> los datos de CBOCA son un
+          <strong>dato atípico</strong> respecto a la propagación del sismo y a los
+          daños reales evidenciados en Pereira (ciudad más afectada). La estación
+          podría estar defectuosa. <strong>No emplear</strong> estos datos en
+          análisis estadísticos ni modelaciones detalladas.
+        </div>
+        <p class="meta">
+          Acelerograma:
+          <a href="SGC-Data/SGC2026pqqmro_CBOCA_10.anc">SGC2026pqqmro_CBOCA_10.anc</a>
+          · Espectros oficiales SGC (ζ = 5 %)
+        </p>
+        <div class="spectra-grid">
+          <figure>
+            <img src="Espectros/CBOCA_10_PSA5.png" alt="PSA 5% estación CBOCA" loading="lazy" />
+            <figcaption>Pseudoaceleración espectral (PSA) — 5 % amortiguamiento</figcaption>
+          </figure>
+          <figure>
+            <img src="Espectros/CBOCA_10_DRS5.png" alt="DRS 5% estación CBOCA" loading="lazy" />
+            <figcaption>Espectro de desplazamiento (DRS) — 5 % amortiguamiento</figcaption>
+          </figure>
+        </div>
+      </article>
+
+      <article class="station-card" id="espectro-CCALA">
+        <h3>CCALA — Calarcá, Quindío</h3>
+        
+        <p class="meta">
+          Acelerograma:
+          <a href="SGC-Data/SGC2026pqqmro_CCALA_10.anc">SGC2026pqqmro_CCALA_10.anc</a>
+          · Espectros oficiales SGC (ζ = 5 %)
+        </p>
+        <div class="spectra-grid">
+          <figure>
+            <img src="Espectros/CCALA_10_PSA5.png" alt="PSA 5% estación CCALA" loading="lazy" />
+            <figcaption>Pseudoaceleración espectral (PSA) — 5 % amortiguamiento</figcaption>
+          </figure>
+          <figure>
+            <img src="Espectros/CCALA_10_DRS5.png" alt="DRS 5% estación CCALA" loading="lazy" />
+            <figcaption>Espectro de desplazamiento (DRS) — 5 % amortiguamiento</figcaption>
+          </figure>
+        </div>
+      </article>
+
+      <article class="station-card" id="espectro-CIRS">
+        <h3>CIRS — Circasia, Quindío</h3>
+        
+        <p class="meta">
+          Acelerograma:
+          <a href="SGC-Data/SGC2026pqqmro_CIRS_10.anc">SGC2026pqqmro_CIRS_10.anc</a>
+          · Espectros oficiales SGC (ζ = 5 %)
+        </p>
+        <div class="spectra-grid">
+          <figure>
+            <img src="Espectros/CIRS_10_PSA5.png" alt="PSA 5% estación CIRS" loading="lazy" />
+            <figcaption>Pseudoaceleración espectral (PSA) — 5 % amortiguamiento</figcaption>
+          </figure>
+          <figure>
+            <img src="Espectros/CIRS_10_DRS5.png" alt="DRS 5% estación CIRS" loading="lazy" />
+            <figcaption>Espectro de desplazamiento (DRS) — 5 % amortiguamiento</figcaption>
+          </figure>
+        </div>
+      </article>
+
+      <article class="station-card" id="espectro-CTRUJ">
+        <h3>CTRUJ — Trujillo, Valle del Cauca</h3>
+        
+        <p class="meta">
+          Acelerograma:
+          <a href="SGC-Data/SGC2026pqqmro_CTRUJ_10.anc">SGC2026pqqmro_CTRUJ_10.anc</a>
+          · Espectros oficiales SGC (ζ = 5 %)
+        </p>
+        <div class="spectra-grid">
+          <figure>
+            <img src="Espectros/CTRUJ_10_PSA5.png" alt="PSA 5% estación CTRUJ" loading="lazy" />
+            <figcaption>Pseudoaceleración espectral (PSA) — 5 % amortiguamiento</figcaption>
+          </figure>
+          <figure>
+            <img src="Espectros/CTRUJ_10_DRS5.png" alt="DRS 5% estación CTRUJ" loading="lazy" />
+            <figcaption>Espectro de desplazamiento (DRS) — 5 % amortiguamiento</figcaption>
+          </figure>
+        </div>
+      </article>
+
+      <article class="station-card" id="espectro-FLND">
+        <h3>FLND — Filandia, Quindío</h3>
+        
+        <p class="meta">
+          Acelerograma:
+          <a href="SGC-Data/SGC2026pqqmro_FLND_10.anc">SGC2026pqqmro_FLND_10.anc</a>
+          · Espectros oficiales SGC (ζ = 5 %)
+        </p>
+        <div class="spectra-grid">
+          <figure>
+            <img src="Espectros/FLND_10_PSA5.png" alt="PSA 5% estación FLND" loading="lazy" />
+            <figcaption>Pseudoaceleración espectral (PSA) — 5 % amortiguamiento</figcaption>
+          </figure>
+          <figure>
+            <img src="Espectros/FLND_10_DRS5.png" alt="DRS 5% estación FLND" loading="lazy" />
+            <figcaption>Espectro de desplazamiento (DRS) — 5 % amortiguamiento</figcaption>
+          </figure>
+        </div>
+      </article>
+
+      <article class="station-card" id="espectro-MAN1C">
+        <h3>MAN1C — Manizales, Caldas</h3>
+        
+        <p class="meta">
+          Acelerograma:
+          <a href="SGC-Data/SGC2026pqqmro_MAN1C_10.anc">SGC2026pqqmro_MAN1C_10.anc</a>
+          · Espectros oficiales SGC (ζ = 5 %)
+        </p>
+        <div class="spectra-grid">
+          <figure>
+            <img src="Espectros/MAN1C_10_PSA5.png" alt="PSA 5% estación MAN1C" loading="lazy" />
+            <figcaption>Pseudoaceleración espectral (PSA) — 5 % amortiguamiento</figcaption>
+          </figure>
+          <figure>
+            <img src="Espectros/MAN1C_10_DRS5.png" alt="DRS 5% estación MAN1C" loading="lazy" />
+            <figcaption>Espectro de desplazamiento (DRS) — 5 % amortiguamiento</figcaption>
+          </figure>
+        </div>
+      </article>
+
+      <article class="station-card" id="espectro-SLNT">
+        <h3>SLNT — Salento, Quindío</h3>
+        
+        <p class="meta">
+          Acelerograma:
+          <a href="SGC-Data/SGC2026pqqmro_SLNT_10.anc">SGC2026pqqmro_SLNT_10.anc</a>
+          · Espectros oficiales SGC (ζ = 5 %)
+        </p>
+        <div class="spectra-grid">
+          <figure>
+            <img src="Espectros/SLNT_10_PSA5.png" alt="PSA 5% estación SLNT" loading="lazy" />
+            <figcaption>Pseudoaceleración espectral (PSA) — 5 % amortiguamiento</figcaption>
+          </figure>
+          <figure>
+            <img src="Espectros/SLNT_10_DRS5.png" alt="DRS 5% estación SLNT" loading="lazy" />
+            <figcaption>Espectro de desplazamiento (DRS) — 5 % amortiguamiento</figcaption>
+          </figure>
+        </div>
+      </article>
+    </section>
+
+    <section id="referencias">
+      <h2>7. Referencias</h2>
+      <ol>
+        <li>Servicio Geológico Colombiano (SGC). Red Nacional de Acelerógrafos (RNAC). Acelerogramas y espectros del evento <strong>SGC2026pqqmro</strong> (2026-08-10).</li>
+        <li>SGC. ShakeMap — <code>info.json</code>, <code>grid.xml</code>, <code>stationlist.json</code>, <code>uncertainty.xml</code>.</li>
+        <li>Nigam, N. C. &amp; Jennings, P. C. (1969). <em>Calculation of Response Spectra from Strong-Motion Earthquake Records.</em> BSSA, 59(2), 909–922.</li>
+        <li>Butterworth, S. (1930). <em>On the Theory of Filter Amplifiers.</em> Wireless Engineer.</li>
+        <li>Boore, D. M. Trabajos sobre corrección de línea base y filtrado de acelerogramas.</li>
+        <li>Chopra, A. K. <em>Dynamics of Structures.</em></li>
+        <li>The ObsPy Development Team. ObsPy: A Python Framework for Seismology.</li>
+        <li>AIS. <strong>NSR-10</strong> — Reglamento Colombiano de Construcción Sismo Resistente, Título A.</li>
+        <li>INGEOMINAS / SGC. Microzonificación y respuesta de sitio en el Eje Cafetero.</li>
+        <li>Documentación del proyecto:
+          <a href="docs/metodos_procesamiento_y_espectro.md">metodología</a>,
+          <a href="docs/guia_amplificacion_efectos_sitio.md">amplificación por sitio</a>.
+        </li>
+      </ol>
+    </section>
+
+    <footer>
+      Informe técnico de datos y procesamiento — evaluación de demanda sísmica.
+      Para diseño reglamentario prevalecen NSR vigente y la microzonificación oficial del municipio.
+      · <a href="README.md">README.md</a>
+    </footer>
+  </div>
+</body>
+</html>

@@ -2,6 +2,11 @@
 Procesamiento de acelerogramas SGC (.ANC) — Sismo 10-ago-2026 Eje Cafetero.
 Evento: SGC2026pqqmro | M7.4 | San José del Palmar - Chocó
 
+AVISO DE CALIDAD: la estación CBOCA (Pereira) produce amplitudes atípicas respecto
+a la propagación del sismo y a los daños reales en Pereira (ciudad más afectada).
+Puede estar defectuosa; NO usar CBOCA en análisis estadísticos ni modelaciones
+detalladas. Ver README.md y docs/metodos_procesamiento_y_espectro.md §9.1.
+
 Pipeline:
   1) Lectura de estaciones .ANC
   2) Corrección de línea base (demean + detrend + taper) → extremos ~0
@@ -39,6 +44,15 @@ FREQ_LOW = 0.10  # Hz — corta deriva / ruido de muy baja frecuencia
 FREQ_HIGH = 25.0  # Hz — elimina ruido de muy alta frecuencia
 TAPER_PCT = 0.05  # 5% cosine taper en cada extremo
 G_CMS2 = 981.0  # cm/s^2 por g
+
+# Estaciones con registro no confiable para análisis / modelación
+ATYPICAL_STATIONS = {
+    "CBOCA": (
+        "Dato atípico respecto a propagación del sismo y daños reales en Pereira "
+        "(ciudad más afectada). Estación posiblemente defectuosa. "
+        "No emplear en análisis estadísticos ni modelaciones detalladas."
+    ),
+}
 
 
 def parse_anc(path: Path) -> dict:
@@ -416,6 +430,11 @@ def process_all() -> None:
         sa_peak = float(np.max(sa_geo[1:])) / G_CMS2 if len(sa_geo) > 1 else 0.0
         t_peak = float(periods[1 + int(np.argmax(sa_geo[1:]))]) if len(sa_geo) > 1 else 0.0
 
+        quality_flag = "ATYPICAL_DO_NOT_USE" if stn in ATYPICAL_STATIONS else "OK"
+        quality_note = ATYPICAL_STATIONS.get(stn)
+        if quality_note:
+            print(f"    [CALIDAD] {stn}: ATYPICAL_DO_NOT_USE — no usar en analisis")
+
         catalog.append(
             {
                 "station": stn,
@@ -435,6 +454,8 @@ def process_all() -> None:
                 "PGA_H_geo_g": round(np.sqrt(pga_ew * pga_ns), 6),
                 "Sa_peak_H_geo_g": round(sa_peak, 6),
                 "T_Sa_peak_s": round(t_peak, 4),
+                "quality_flag": quality_flag,
+                "quality_note": quality_note,
                 "signal_csv": str(csv_sig.relative_to(ROOT)),
                 "spectrum_csv": str(csv_sp.relative_to(ROOT)),
                 "source_file": rec["filename"],
@@ -492,6 +513,7 @@ def process_all() -> None:
             "PGA_H_geo_g",
             "Sa_peak_H_geo_g",
             "T_Sa_peak_s",
+            "quality_flag",
         ]
         w = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore")
         w.writeheader()
