@@ -59,6 +59,13 @@ _COLORS = {
     "fig_bg": "#edf3f5",
 }
 
+# Colores llamativos solo para espectros de respuesta
+_SPECTRUM_COLORS = {
+    "EW": "#e000a8",   # magenta
+    "NS": "#1a5cff",   # azul
+    "VER": "#00a86b",  # verde
+}
+
 
 def esc(x: str) -> str:
     return html.escape(str(x) if x is not None else "")
@@ -151,12 +158,14 @@ def plot_spectrum(code: str, atypical: bool) -> Path | None:
     T = T[mask]
     sa_ew = data["Sa_EW_g"][mask]
     sa_ns = data["Sa_NS_g"][mask]
+    sa_ver = data["Sa_VER_g"][mask]
     sa_geo = data["Sa_RotD50_approx_g"][mask]
     psa_geo = data["PSA_geo_mean_g"][mask]
 
     fig, ax = plt.subplots(figsize=(9.5, 4.6), constrained_layout=True)
-    ax.plot(T, sa_ew, color=_COLORS["EW"], linewidth=1.2, label=r"$S_a$ EW")
-    ax.plot(T, sa_ns, color=_COLORS["NS"], linewidth=1.2, label=r"$S_a$ NS")
+    ax.plot(T, sa_ew, color=_SPECTRUM_COLORS["EW"], linewidth=1.35, label=r"$S_a$ EW")
+    ax.plot(T, sa_ns, color=_SPECTRUM_COLORS["NS"], linewidth=1.35, label=r"$S_a$ NS")
+    ax.plot(T, sa_ver, color=_SPECTRUM_COLORS["VER"], linewidth=1.35, label=r"$S_a$ V")
     ax.plot(
         T,
         sa_geo,
