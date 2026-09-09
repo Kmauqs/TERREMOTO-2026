@@ -191,6 +191,7 @@
         <li><a href="#amplificacion">Factores de amplificación por sitio</a></li>
         <li><a href="#estaciones">Estaciones — localización y PGA</a></li>
         <li><a href="#espectros-sgc">Espectros de respuesta obtenidos por el SGC</a></li>
+        <li><a href="#analisis-propio">Señales depuradas y espectros de este análisis (6.1)</a></li>
         <li><a href="#referencias">Referencias</a></li>
       </ol>
     </nav>
@@ -261,7 +262,7 @@
                 <a href="SGC-Data/uncertainty.xml">uncertainty.xml</a>
               </td></tr>
             <tr><td>Productos derivados</td><td>Señales filtradas y espectros recalculados</td>
-              <td><a href="output/senales/">output/senales/</a> · <a href="output/espectros/">output/espectros/</a></td></tr>
+              <td><a href="output/senales/">output/senales/</a> · <a href="output/espectros/">output/espectros/</a> · <a href="output/figuras/">output/figuras/</a></td></tr>
           </tbody>
         </table>
       </div>
@@ -533,6 +534,242 @@
         </div>
       </article>
     </section>
+
+
+    <section id="analisis-propio">
+      <h2>6.1 Señales depuradas y Espectros de Respuesta obtenidos mediante este análisis</h2>
+      <p>
+        Productos derivados del código python del proyecto (<a href="procesar_sismo.py">procesar_sismo.py</a>):
+        acelerogramas corregidos/filtrados y espectros de respuesta elásticos recalculados
+        (ζ = 5 %, Nigam–Jennings). Figuras en
+        <a href="output/figuras/">output/figuras/</a>; CSV en
+        <a href="output/senales/">output/senales/</a> y
+        <a href="output/espectros/">output/espectros/</a>.
+      </p>
+      <h3>Limitaciones de los datos mostrados</h3>
+      <p class="muted">
+        Los gráficos y CSV de esta sección reflejan el movimiento <strong>en la estación</strong>
+        tras el post-proceso indicado. No sustituyen microzonificación ni estudio de sitio local.
+      </p>
+      
+      <div class="table-wrap" style="max-height:none">
+        <table>
+          <thead>
+            <tr><th>Aspecto / limitación</th><th>Alcance de los datos mostrados</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Corrección de línea base</td><td>Demean + detrend lineal + taper coseno (5 %; post-filtro 2.5 %). No elimina por sí sola errores instrumentales severos.</td></tr><tr><td>Filtro pasabanda</td><td>Butterworth 4 polos, <strong>0.10–25 Hz</strong>, fase cero (<code>filtfilt</code>). Contenido fuera de banda atenuado; no es deconvolución instrumental.</td></tr><tr><td>Espectro elástico SDOF</td><td>Oscilador lineal viscoso con <strong>ζ = 5 %</strong>; no modela plastificación ni degradación de rigidez.</td></tr><tr><td>Integración temporal</td><td>Método exacto <strong>Nigam–Jennings (1969)</strong> para excitación lineal por tramos; T = 0–4 s, ΔT = 0.01 s.</td></tr><tr><td>Combinación horizontal</td><td>Media geométrica EW–NS (proxy tipo RotD50). <strong>No</strong> se calculó RotD50/RotD100 por rotación azimutal.</td></tr><tr><td>Función de transferencia del instrumento</td><td><strong>No aplicada</strong>: campo <code>TIPO DE EQUIPO</code> vacío o no especificado en los <code>.ANC</code>.</td></tr><tr><td>Deconvolución a roca / sitio</td><td><strong>No aplicada</strong>: sin perfiles V<sub>S</sub>(z) ni V<sub>S30</sub> medidos por estación. El espectro es el del movimiento <em>en la estación</em>.</td></tr><tr><td>Orientación de sensores</td><td>Sin corrección adicional de azimuth más allá de las etiquetas EW/NS del SGC.</td></tr><tr><td>Respuesta no lineal de sitio</td><td>No modelada (requiere ensayo dinámico y modelo constitutivo de suelo).</td></tr><tr><td>Geometría de ruptura / directividad</td><td>No incorporada; ShakeMap sin falla finita explícita utilizable en este flujo.</td></tr><tr><td>Comparación formal SGC vs. espectro propio</td><td>Los PSA/DRS oficiales (§6) son referencia visual; el pipeline recalcula el espectro de forma independiente (§6.1).</td></tr><tr><td>Estación CBOCA (Pereira)</td><td><strong>Dato atípico / no usar</strong> en análisis estadísticos, GMPE ni modelaciones. Amplitudes incongruentes con daños observados en Pereira (ver <a href="#obs-cboca">observación</a>).</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">
+        Detalle metodológico:
+        <a href="docs/metodos_procesamiento_y_espectro.md">docs/metodos_procesamiento_y_espectro.md</a>
+        · Resumen en <a href="README.md">README.md</a> (§3).
+      </p>
+
+      
+      <article class="station-card" id="analisis-ARMEC">
+        <h3>ARMEC — Armenia, Quindío</h3>
+        
+        <p class="meta">
+          Señal depurada:
+          <a href="output/senales/ARMEC_aceleracion_ajustada.csv">ARMEC_aceleracion_ajustada.csv</a>
+          · Espectro elástico (este análisis):
+          <a href="output/espectros/ARMEC_espectro_respuesta_elastico.csv">ARMEC_espectro_respuesta_elastico.csv</a>
+        </p>
+        <div class="spectra-grid">
+          <figure>
+            <img src="output/figuras/ARMEC_senal_depurada.png" alt="Señal depurada estación ARMEC" loading="lazy" />
+            <figcaption>
+              Aceleración depurada (EW, NS, VER) tras corrección de línea base y filtro 0.1–25 Hz
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="output/figuras/ARMEC_espectro_respuesta.png" alt="Espectro de respuesta estación ARMEC" loading="lazy" />
+            <figcaption>
+              Espectro de respuesta elástico S<sub>a</sub> / PSA (ζ = 5 %, T = 0–4 s) — Nigam–Jennings
+            </figcaption>
+          </figure>
+        </div>
+      </article>
+      <article class="station-card atypical" id="analisis-CBOCA">
+        <h3>CBOCA — Pereira / Bocatoma, Risaralda — DATO ATÍPICO</h3>
+        
+        <div class="alert">
+          <strong>Observación de calidad:</strong> CBOCA es un
+          <strong>dato atípico</strong> respecto a la propagación del sismo y a los
+          daños reales en Pereira. La estación podría estar defectuosa.
+          <strong>No emplear</strong> estas señales ni espectros en análisis estadísticos
+          ni modelaciones detalladas de demanda.
+        </div>
+        <p class="meta">
+          Señal depurada:
+          <a href="output/senales/CBOCA_aceleracion_ajustada.csv">CBOCA_aceleracion_ajustada.csv</a>
+          · Espectro elástico (este análisis):
+          <a href="output/espectros/CBOCA_espectro_respuesta_elastico.csv">CBOCA_espectro_respuesta_elastico.csv</a>
+        </p>
+        <div class="spectra-grid">
+          <figure>
+            <img src="output/figuras/CBOCA_senal_depurada.png" alt="Señal depurada estación CBOCA" loading="lazy" />
+            <figcaption>
+              Aceleración depurada (EW, NS, VER) tras corrección de línea base y filtro 0.1–25 Hz
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="output/figuras/CBOCA_espectro_respuesta.png" alt="Espectro de respuesta estación CBOCA" loading="lazy" />
+            <figcaption>
+              Espectro de respuesta elástico S<sub>a</sub> / PSA (ζ = 5 %, T = 0–4 s) — Nigam–Jennings
+            </figcaption>
+          </figure>
+        </div>
+      </article>
+      <article class="station-card" id="analisis-CCALA">
+        <h3>CCALA — Calarcá, Quindío</h3>
+        
+        <p class="meta">
+          Señal depurada:
+          <a href="output/senales/CCALA_aceleracion_ajustada.csv">CCALA_aceleracion_ajustada.csv</a>
+          · Espectro elástico (este análisis):
+          <a href="output/espectros/CCALA_espectro_respuesta_elastico.csv">CCALA_espectro_respuesta_elastico.csv</a>
+        </p>
+        <div class="spectra-grid">
+          <figure>
+            <img src="output/figuras/CCALA_senal_depurada.png" alt="Señal depurada estación CCALA" loading="lazy" />
+            <figcaption>
+              Aceleración depurada (EW, NS, VER) tras corrección de línea base y filtro 0.1–25 Hz
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="output/figuras/CCALA_espectro_respuesta.png" alt="Espectro de respuesta estación CCALA" loading="lazy" />
+            <figcaption>
+              Espectro de respuesta elástico S<sub>a</sub> / PSA (ζ = 5 %, T = 0–4 s) — Nigam–Jennings
+            </figcaption>
+          </figure>
+        </div>
+      </article>
+      <article class="station-card" id="analisis-CIRS">
+        <h3>CIRS — Circasia, Quindío</h3>
+        
+        <p class="meta">
+          Señal depurada:
+          <a href="output/senales/CIRS_aceleracion_ajustada.csv">CIRS_aceleracion_ajustada.csv</a>
+          · Espectro elástico (este análisis):
+          <a href="output/espectros/CIRS_espectro_respuesta_elastico.csv">CIRS_espectro_respuesta_elastico.csv</a>
+        </p>
+        <div class="spectra-grid">
+          <figure>
+            <img src="output/figuras/CIRS_senal_depurada.png" alt="Señal depurada estación CIRS" loading="lazy" />
+            <figcaption>
+              Aceleración depurada (EW, NS, VER) tras corrección de línea base y filtro 0.1–25 Hz
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="output/figuras/CIRS_espectro_respuesta.png" alt="Espectro de respuesta estación CIRS" loading="lazy" />
+            <figcaption>
+              Espectro de respuesta elástico S<sub>a</sub> / PSA (ζ = 5 %, T = 0–4 s) — Nigam–Jennings
+            </figcaption>
+          </figure>
+        </div>
+      </article>
+      <article class="station-card" id="analisis-CTRUJ">
+        <h3>CTRUJ — Trujillo, Valle del Cauca</h3>
+        
+        <p class="meta">
+          Señal depurada:
+          <a href="output/senales/CTRUJ_aceleracion_ajustada.csv">CTRUJ_aceleracion_ajustada.csv</a>
+          · Espectro elástico (este análisis):
+          <a href="output/espectros/CTRUJ_espectro_respuesta_elastico.csv">CTRUJ_espectro_respuesta_elastico.csv</a>
+        </p>
+        <div class="spectra-grid">
+          <figure>
+            <img src="output/figuras/CTRUJ_senal_depurada.png" alt="Señal depurada estación CTRUJ" loading="lazy" />
+            <figcaption>
+              Aceleración depurada (EW, NS, VER) tras corrección de línea base y filtro 0.1–25 Hz
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="output/figuras/CTRUJ_espectro_respuesta.png" alt="Espectro de respuesta estación CTRUJ" loading="lazy" />
+            <figcaption>
+              Espectro de respuesta elástico S<sub>a</sub> / PSA (ζ = 5 %, T = 0–4 s) — Nigam–Jennings
+            </figcaption>
+          </figure>
+        </div>
+      </article>
+      <article class="station-card" id="analisis-FLND">
+        <h3>FLND — Filandia, Quindío</h3>
+        
+        <p class="meta">
+          Señal depurada:
+          <a href="output/senales/FLND_aceleracion_ajustada.csv">FLND_aceleracion_ajustada.csv</a>
+          · Espectro elástico (este análisis):
+          <a href="output/espectros/FLND_espectro_respuesta_elastico.csv">FLND_espectro_respuesta_elastico.csv</a>
+        </p>
+        <div class="spectra-grid">
+          <figure>
+            <img src="output/figuras/FLND_senal_depurada.png" alt="Señal depurada estación FLND" loading="lazy" />
+            <figcaption>
+              Aceleración depurada (EW, NS, VER) tras corrección de línea base y filtro 0.1–25 Hz
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="output/figuras/FLND_espectro_respuesta.png" alt="Espectro de respuesta estación FLND" loading="lazy" />
+            <figcaption>
+              Espectro de respuesta elástico S<sub>a</sub> / PSA (ζ = 5 %, T = 0–4 s) — Nigam–Jennings
+            </figcaption>
+          </figure>
+        </div>
+      </article>
+      <article class="station-card" id="analisis-MAN1C">
+        <h3>MAN1C — Manizales, Caldas</h3>
+        
+        <p class="meta">
+          Señal depurada:
+          <a href="output/senales/MAN1C_aceleracion_ajustada.csv">MAN1C_aceleracion_ajustada.csv</a>
+          · Espectro elástico (este análisis):
+          <a href="output/espectros/MAN1C_espectro_respuesta_elastico.csv">MAN1C_espectro_respuesta_elastico.csv</a>
+        </p>
+        <div class="spectra-grid">
+          <figure>
+            <img src="output/figuras/MAN1C_senal_depurada.png" alt="Señal depurada estación MAN1C" loading="lazy" />
+            <figcaption>
+              Aceleración depurada (EW, NS, VER) tras corrección de línea base y filtro 0.1–25 Hz
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="output/figuras/MAN1C_espectro_respuesta.png" alt="Espectro de respuesta estación MAN1C" loading="lazy" />
+            <figcaption>
+              Espectro de respuesta elástico S<sub>a</sub> / PSA (ζ = 5 %, T = 0–4 s) — Nigam–Jennings
+            </figcaption>
+          </figure>
+        </div>
+      </article>
+      <article class="station-card" id="analisis-SLNT">
+        <h3>SLNT — Salento, Quindío</h3>
+        
+        <p class="meta">
+          Señal depurada:
+          <a href="output/senales/SLNT_aceleracion_ajustada.csv">SLNT_aceleracion_ajustada.csv</a>
+          · Espectro elástico (este análisis):
+          <a href="output/espectros/SLNT_espectro_respuesta_elastico.csv">SLNT_espectro_respuesta_elastico.csv</a>
+        </p>
+        <div class="spectra-grid">
+          <figure>
+            <img src="output/figuras/SLNT_senal_depurada.png" alt="Señal depurada estación SLNT" loading="lazy" />
+            <figcaption>
+              Aceleración depurada (EW, NS, VER) tras corrección de línea base y filtro 0.1–25 Hz
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="output/figuras/SLNT_espectro_respuesta.png" alt="Espectro de respuesta estación SLNT" loading="lazy" />
+            <figcaption>
+              Espectro de respuesta elástico S<sub>a</sub> / PSA (ζ = 5 %, T = 0–4 s) — Nigam–Jennings
+            </figcaption>
+          </figure>
+        </div>
+      </article>
+    </section>
+
 
     <section id="referencias">
       <h2>7. Referencias</h2>

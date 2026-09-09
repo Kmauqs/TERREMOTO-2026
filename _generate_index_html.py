@@ -1,14 +1,23 @@
 # -*- coding: utf-8 -*-
-"""Genera index.html del informe del sismo 10-ago-2026."""
+"""Genera index.html del informe del sismo 10-ago-2026 y figuras de §6.1."""
 from __future__ import annotations
 
 import csv
 import html
 from pathlib import Path
 
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import numpy as np
+
 ROOT = Path(__file__).resolve().parent
 CSV_PATH = ROOT / "Espectros" / "table-Estaciones-Localizacion-PGA.csv"
 OUT = ROOT / "index.html"
+FIG_DIR = ROOT / "output" / "figuras"
+SENALES_DIR = ROOT / "output" / "senales"
+ESPECTROS_DIR = ROOT / "output" / "espectros"
 
 STATIONS = [
     ("ARMEC", "Armenia, Quindío"),
@@ -38,6 +47,15 @@ HEADERS = [
     "PGA Z (cm/s²)",
 ]
 
+# Estilo coherente con el informe HTML
+_COLORS = {
+    "EW": "#8b4513",
+    "NS": "#2c5f2d",
+    "VER": "#3d5a80",
+    "GEO": "#1a1f24",
+    "grid": "#d5dbe3",
+}
+
 
 def esc(x: str) -> str:
     return html.escape(str(x) if x is not None else "")
@@ -48,6 +66,138 @@ def load_rows() -> list[list[str]]:
         reader = csv.reader(f)
         next(reader, None)  # skip header
         return [row for row in reader if row]
+
+
+def _downsample(n: int, max_pts: int = 8000) -> slice:
+    if n <= max_pts:
+        return slice(None)
+    step = max(1, n // max_pts)
+    return slice(None, None, step)
+
+
+def _style_axes(ax: plt.Axes) -> None:
+    ax.set_facecolor("#ffffff")
+    ax.grid(True, color=_COLORS["grid"], linewidth=0.6, alpha=0.9)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.tick_params(labelsize=8)
+
+
+SIGNAL_T_MAX_S = 300.0
+
+
+def plot_signal(code: str, atypical: bool) -> Path | None:
+    csv_path = SENALES_DIR / f"{code}_aceleracion_ajustada.csv"
+    if not csv_path.is_file():
+        print(f"  [omitido] señal no encontrada: {csv_path.name}")
+        return None
+
+    data = np.genfromtxt(csv_path, delimiter=",", names=True)
+    t = data["time_s"]
+    mask = t <= SIGNAL_T_MAX_S + 1e-9
+    t = t[mask]
+    ew = data["acc_EW_g"][mask]
+    ns = data["acc_NS_g"][mask]
+    ver = data["acc_VER_g"][mask]
+    sl = _downsample(len(t))
+    t = t[sl]
+    ew = ew[sl]
+    ns = ns[sl]
+    ver = ver[sl]
+
+    fig, axes = plt.subplots(3, 1, figsize=(9.5, 6.2), sharex=True, constrained_layout=True)
+    series = (
+        ("EW", ew, _COLORS["EW"]),
+        ("NS", ns, _COLORS["NS"]),
+        ("VER", ver, _COLORS["VER"]),
+    )
+    for ax, (label, y, color) in zip(axes, series):
+        ax.plot(t, y, color=color, linewidth=0.55)
+        ax.set_xlim(0, SIGNAL_T_MAX_S)
+        ax.set_ylabel(f"{label} (g)", fontsize=9)
+        _style_axes(ax)
+        pga = float(np.max(np.abs(y)))
+        ax.set_title(f"PGA {label} ≈ {pga:.3f} g", loc="right", fontsize=8, color="#4a5560")
+
+    axes[-1].set_xlabel("Tiempo (s)", fontsize=9)
+    title = f"{code} — aceleración depurada (línea base + filtro 0.1–25 Hz)"
+    if atypical:
+        title += "  ·  DATO ATÍPICO — NO USAR"
+    fig.suptitle(title, fontsize=11, fontweight="bold", color="#b33a2b" if atypical else "#1a1f24")
+
+    out = FIG_DIR / f"{code}_senal_depurada.png"
+    fig.savefig(out, dpi=140, facecolor="#f3f1ec", edgecolor="none")
+    plt.close(fig)
+    return out
+
+
+def plot_spectrum(code: str, atypical: bool) -> Path | None:
+    csv_path = ESPECTROS_DIR / f"{code}_espectro_respuesta_elastico.csv"
+    if not csv_path.is_file():
+        print(f"  [omitido] espectro no encontrado: {csv_path.name}")
+        return None
+
+    data = np.genfromtxt(csv_path, delimiter=",", names=True)
+    T = data["T_s"]
+    mask = T <= 4.0 + 1e-9
+    T = T[mask]
+    sa_ew = data["Sa_EW_g"][mask]
+    sa_ns = data["Sa_NS_g"][mask]
+    sa_geo = data["Sa_RotD50_approx_g"][mask]
+    psa_geo = data["PSA_geo_mean_g"][mask]
+
+    fig, ax = plt.subplots(figsize=(9.5, 4.6), constrained_layout=True)
+    ax.plot(T, sa_ew, color=_COLORS["EW"], linewidth=1.2, label=r"$S_a$ EW")
+    ax.plot(T, sa_ns, color=_COLORS["NS"], linewidth=1.2, label=r"$S_a$ NS")
+    ax.plot(
+        T,
+        sa_geo,
+        color=_COLORS["GEO"],
+        linewidth=1.8,
+        label=r"$S_a$ media geom. H (EW–NS)",
+    )
+    ax.plot(
+        T,
+        psa_geo,
+        color="#6b3a12",
+        linewidth=1.0,
+        linestyle="--",
+        alpha=0.85,
+        label="PSA media geom. H",
+    )
+    ax.set_xlim(0, 4)
+    ax.set_xlabel("Periodo T (s)", fontsize=9)
+    ax.set_ylabel(r"Aceleración espectral $S_a$ / PSA (g)", fontsize=9)
+    _style_axes(ax)
+    ax.legend(fontsize=8, frameon=True, fancybox=False, edgecolor=_COLORS["grid"])
+
+    title = f"{code} — espectro de respuesta elástico (ζ = 5 %, Nigam–Jennings)"
+    if atypical:
+        title += "  ·  DATO ATÍPICO — NO USAR"
+    ax.set_title(title, fontsize=11, fontweight="bold", color="#b33a2b" if atypical else "#1a1f24")
+
+    out = FIG_DIR / f"{code}_espectro_respuesta.png"
+    fig.savefig(out, dpi=140, facecolor="#f3f1ec", edgecolor="none")
+    plt.close(fig)
+    return out
+
+
+def generate_figures() -> dict[str, dict[str, Path]]:
+    """Genera PNG de señal y espectro por estación. Devuelve rutas relativas al repo."""
+    FIG_DIR.mkdir(parents=True, exist_ok=True)
+    results: dict[str, dict[str, Path]] = {}
+    print(f"Generando figuras en {FIG_DIR.relative_to(ROOT)} …")
+    for code, _place in STATIONS:
+        atypical = code in ATYPICAL_STATIONS
+        sig = plot_signal(code, atypical)
+        sp = plot_spectrum(code, atypical)
+        results[code] = {}
+        if sig is not None:
+            results[code]["signal"] = sig.relative_to(ROOT).as_posix()
+        if sp is not None:
+            results[code]["spectrum"] = sp.relative_to(ROOT).as_posix()
+        print(f"  {code}: señal={'ok' if sig else '—'}  espectro={'ok' if sp else '—'}")
+    return results
 
 
 def spectrum_section() -> str:
@@ -94,6 +244,162 @@ def spectrum_section() -> str:
     return "\n".join(blocks)
 
 
+def analysis_limitations_table() -> str:
+    """Tabla de limitaciones alineada con docs/metodos y README §3.2."""
+    rows = [
+        (
+            "Corrección de línea base",
+            "Demean + detrend lineal + taper coseno (5 %; post-filtro 2.5 %). "
+            "No elimina por sí sola errores instrumentales severos.",
+        ),
+        (
+            "Filtro pasabanda",
+            "Butterworth 4 polos, <strong>0.10–25 Hz</strong>, fase cero (<code>filtfilt</code>). "
+            "Contenido fuera de banda atenuado; no es deconvolución instrumental.",
+        ),
+        (
+            "Espectro elástico SDOF",
+            "Oscilador lineal viscoso con <strong>ζ = 5 %</strong>; no modela plastificación "
+            "ni degradación de rigidez.",
+        ),
+        (
+            "Integración temporal",
+            "Método exacto <strong>Nigam–Jennings (1969)</strong> para excitación lineal por tramos; "
+            "T = 0–4 s, ΔT = 0.01 s.",
+        ),
+        (
+            "Combinación horizontal",
+            "Media geométrica EW–NS (proxy tipo RotD50). "
+            "<strong>No</strong> se calculó RotD50/RotD100 por rotación azimutal.",
+        ),
+        (
+            "Función de transferencia del instrumento",
+            "<strong>No aplicada</strong>: campo <code>TIPO DE EQUIPO</code> vacío o no especificado "
+            "en los <code>.ANC</code>.",
+        ),
+        (
+            "Deconvolución a roca / sitio",
+            "<strong>No aplicada</strong>: sin perfiles V<sub>S</sub>(z) ni V<sub>S30</sub> medidos "
+            "por estación. El espectro es el del movimiento <em>en la estación</em>.",
+        ),
+        (
+            "Orientación de sensores",
+            "Sin corrección adicional de azimuth más allá de las etiquetas EW/NS del SGC.",
+        ),
+        (
+            "Respuesta no lineal de sitio",
+            "No modelada (requiere ensayo dinámico y modelo constitutivo de suelo).",
+        ),
+        (
+            "Geometría de ruptura / directividad",
+            "No incorporada; ShakeMap sin falla finita explícita utilizable en este flujo.",
+        ),
+        (
+            "Comparación formal SGC vs. espectro propio",
+            "Los PSA/DRS oficiales (§6) son referencia visual; el pipeline recalcula el espectro "
+            "de forma independiente (§6.1).",
+        ),
+        (
+            "Estación CBOCA (Pereira)",
+            "<strong>Dato atípico / no usar</strong> en análisis estadísticos, GMPE ni modelaciones. "
+            "Amplitudes incongruentes con daños observados en Pereira "
+            "(ver <a href=\"#obs-cboca\">observación</a>).",
+        ),
+    ]
+    body = "".join(
+        f"<tr><td>{aspect}</td><td>{detail}</td></tr>" for aspect, detail in rows
+    )
+    return f"""
+      <div class="table-wrap" style="max-height:none">
+        <table>
+          <thead>
+            <tr><th>Aspecto / limitación</th><th>Alcance de los datos mostrados</th></tr>
+          </thead>
+          <tbody>
+            {body}
+          </tbody>
+        </table>
+      </div>
+      <p class="note">
+        Detalle metodológico:
+        <a href="docs/metodos_procesamiento_y_espectro.md">docs/metodos_procesamiento_y_espectro.md</a>
+        · Resumen en <a href="README.md">README.md</a> (§3).
+      </p>
+"""
+
+
+def analysis_section(figures: dict[str, dict[str, Path | str]]) -> str:
+    blocks = []
+    for code, place in STATIONS:
+        atypical = code in ATYPICAL_STATIONS
+        card_class = "station-card atypical" if atypical else "station-card"
+        warn = ""
+        if atypical:
+            warn = """
+        <div class="alert">
+          <strong>Observación de calidad:</strong> CBOCA es un
+          <strong>dato atípico</strong> respecto a la propagación del sismo y a los
+          daños reales en Pereira. La estación podría estar defectuosa.
+          <strong>No emplear</strong> estas señales ni espectros en análisis estadísticos
+          ni modelaciones detalladas de demanda.
+        </div>"""
+
+        sig_csv = f"output/senales/{code}_aceleracion_ajustada.csv"
+        sp_csv = f"output/espectros/{code}_espectro_respuesta_elastico.csv"
+        figs = figures.get(code, {})
+        sig_img = figs.get("signal", f"output/figuras/{code}_senal_depurada.png")
+        sp_img = figs.get("spectrum", f"output/figuras/{code}_espectro_respuesta.png")
+
+        blocks.append(
+            f"""
+      <article class="{card_class}" id="analisis-{code}">
+        <h3>{esc(code)} — {esc(place)}</h3>
+        {warn}
+        <p class="meta">
+          Señal depurada:
+          <a href="{sig_csv}">{code}_aceleracion_ajustada.csv</a>
+          · Espectro elástico (este análisis):
+          <a href="{sp_csv}">{code}_espectro_respuesta_elastico.csv</a>
+        </p>
+        <div class="spectra-grid">
+          <figure>
+            <img src="{sig_img}" alt="Señal depurada estación {code}" loading="lazy" />
+            <figcaption>
+              Aceleración depurada (EW, NS, VER) tras corrección de línea base y filtro 0.1–25 Hz
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="{sp_img}" alt="Espectro de respuesta estación {code}" loading="lazy" />
+            <figcaption>
+              Espectro de respuesta elástico S<sub>a</sub> / PSA (ζ = 5 %, T = 0–4 s) — Nigam–Jennings
+            </figcaption>
+          </figure>
+        </div>
+      </article>"""
+        )
+
+    return f"""
+    <section id="analisis-propio">
+      <h2>6.1 Señales depuradas y Espectros de Respuesta obtenidos mediante este análisis</h2>
+      <p>
+        Productos derivados del pipeline del proyecto (<a href="procesar_sismo.py">procesar_sismo.py</a>):
+        acelerogramas corregidos/filtrados y espectros de respuesta elásticos recalculados
+        (ζ = 5 %, Nigam–Jennings). Figuras en
+        <a href="output/figuras/">output/figuras/</a>; CSV en
+        <a href="output/senales/">output/senales/</a> y
+        <a href="output/espectros/">output/espectros/</a>.
+      </p>
+      <h3>Limitaciones de los datos mostrados</h3>
+      <p class="muted">
+        Los gráficos y CSV de esta sección reflejan el movimiento <strong>en la estación</strong>
+        tras el post-proceso indicado. No sustituyen microzonificación ni estudio de sitio local.
+      </p>
+      {analysis_limitations_table()}
+      {"".join(blocks)}
+    </section>
+"""
+
+
 def stations_table(rows: list[list[str]]) -> str:
     thead = "".join(f"<th>{esc(h)}</th>" for h in HEADERS)
     body_rows = []
@@ -125,6 +431,7 @@ def stations_table(rows: list[list[str]]) -> str:
 
 def main() -> None:
     rows = load_rows()
+    figures = generate_figures()
     html_doc = f"""<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -318,6 +625,7 @@ def main() -> None:
         <li><a href="#amplificacion">Factores de amplificación por sitio</a></li>
         <li><a href="#estaciones">Estaciones — localización y PGA</a></li>
         <li><a href="#espectros-sgc">Espectros de respuesta obtenidos por el SGC</a></li>
+        <li><a href="#analisis-propio">Señales depuradas y espectros de este análisis (6.1)</a></li>
         <li><a href="#referencias">Referencias</a></li>
       </ol>
     </nav>
@@ -388,7 +696,7 @@ def main() -> None:
                 <a href="SGC-Data/uncertainty.xml">uncertainty.xml</a>
               </td></tr>
             <tr><td>Productos derivados</td><td>Señales filtradas y espectros recalculados</td>
-              <td><a href="output/senales/">output/senales/</a> · <a href="output/espectros/">output/espectros/</a></td></tr>
+              <td><a href="output/senales/">output/senales/</a> · <a href="output/espectros/">output/espectros/</a> · <a href="output/figuras/">output/figuras/</a></td></tr>
           </tbody>
         </table>
       </div>
@@ -484,6 +792,8 @@ def main() -> None:
       {spectrum_section()}
     </section>
 
+{analysis_section(figures)}
+
     <section id="referencias">
       <h2>7. Referencias</h2>
       <ol>
@@ -513,7 +823,7 @@ def main() -> None:
 </html>
 """
     OUT.write_text(html_doc, encoding="utf-8")
-    print(f"Wrote {OUT} with {len(rows)} stations")
+    print(f"Wrote {OUT} with {len(rows)} stations and {len(figures)} analysis cards")
 
 
 if __name__ == "__main__":
