@@ -4,121 +4,155 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Terremoto 10 ago 2026 — Eje Cafetero | Informe técnico</title>
+  <meta name="description" content="Informe técnico del sismo M 7.4 del 10 de agosto de 2026 (SGC2026pqqmro) — Eje Cafetero. Productos SGC, espectros y procesamiento." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --ink: #1a1f24;
-      --muted: #4a5560;
-      --line: #d5dbe3;
-      --bg: #f3f1ec;
-      --card: #ffffff;
-      --accent: #8b4513;
-      --accent-soft: #e8d5c4;
-      --highlight: #f7f0e8;
+      --ink: #14283b;
+      --navy: #063c5b;
+      --blue: #0a6e99;
+      --sky: #e9f4f8;
+      --gold: #d9a441;
+      --line: #cbd9e0;
+      --paper: #fff;
+      --muted: #5a6d7c;
+      --danger: #9b0d18;
+      --danger-bg: #fde8e8;
+      --highlight: #edf6f9;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
       color: var(--ink);
-      background:
-        radial-gradient(ellipse at top, #ebe6dc 0%, var(--bg) 55%),
-        var(--bg);
-      line-height: 1.55;
+      background: #edf3f5;
+      font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
     }
+    header.site {
+      padding: 18px 30px 16px;
+      color: #fff;
+      background: linear-gradient(115deg, #063c5b, #0b698f);
+    }
+    header.site h1 {
+      margin: 0;
+      font-size: clamp(1.35rem, 2.8vw, 2.1rem);
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      font-weight: 700;
+    }
+    header.site > p {
+      max-width: 1100px;
+      margin: 6px 0 0;
+      color: #e4f3f9;
+    }
+    header.site a { color: #d5ecf4; }
+    header.site a:hover { color: #fff; }
+    .home-link {
+      display: inline-block;
+      margin: 0 0 8px;
+      color: #d5ecf4;
+      text-decoration: none;
+      font-family: "Source Code Pro", ui-monospace, monospace;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .home-link:hover { color: #fff; text-decoration: underline; }
     .wrap {
       max-width: 1100px;
       margin: 0 auto;
-      padding: 2rem 1.25rem 4rem;
-    }
-    header.hero {
-      border-bottom: 3px solid var(--accent);
-      padding-bottom: 1.25rem;
-      margin-bottom: 2rem;
-    }
-    header.hero p.kicker {
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-size: 0.75rem;
-      color: var(--accent);
-      margin: 0 0 0.4rem;
-      font-weight: 700;
-    }
-    h1 {
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: clamp(1.6rem, 3vw, 2.2rem);
-      margin: 0 0 0.5rem;
-      line-height: 1.2;
+      padding: 14px 20px 36px;
     }
     h2 {
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: 1.35rem;
-      margin: 2.4rem 0 0.85rem;
-      padding-top: 0.5rem;
-      border-top: 1px solid var(--line);
+      font-size: 1.15rem;
+      margin: 1.75rem 0 0.85rem;
+      color: var(--navy);
     }
     h3 {
       margin: 0 0 0.4rem;
-      font-size: 1.05rem;
+      font-size: 1.02rem;
+      color: var(--navy);
     }
     p, li { color: var(--ink); }
-    .muted { color: var(--muted); }
-    a { color: #6b3a12; }
-    a:hover { color: #3d220a; }
+    .muted { color: var(--muted); font-size: 0.9rem; }
+    a { color: #075c86; }
+    a:hover { color: var(--navy); }
     nav.toc {
-      background: var(--card);
+      background: var(--paper);
       border: 1px solid var(--line);
+      border-radius: 10px;
+      box-shadow: 0 2px 10px #1232;
       padding: 1rem 1.25rem;
-      margin: 1.5rem 0;
+      margin: 0 0 1.25rem;
     }
-    nav.toc ol { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+    nav.toc strong {
+      font-family: "Source Code Pro", ui-monospace, monospace;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    nav.toc ol { margin: 0.5rem 0 0; padding-left: 1.2rem; }
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.82rem;
-      background: var(--card);
+      font-size: 0.91rem;
+      background: var(--paper);
     }
     th, td {
-      border: 1px solid var(--line);
-      padding: 0.35rem 0.45rem;
+      border-bottom: 1px solid var(--line);
+      padding: 8px;
       text-align: left;
       vertical-align: top;
     }
     th {
-      background: #2c333a;
-      color: #fff;
+      background: #edf6f9;
+      color: var(--navy);
       position: sticky;
       top: 0;
       z-index: 1;
-      font-weight: 600;
+      font-weight: 700;
       white-space: nowrap;
     }
     tr.has-waveform { background: var(--highlight); }
-    tr.atypical-row { background: #fde8e4; outline: 2px solid #b33a2b; outline-offset: -2px; }
+    tr.atypical-row {
+      background: var(--danger-bg);
+      outline: 2px solid var(--danger);
+      outline-offset: -2px;
+    }
     .alert {
-      background: #fde8e4;
-      border: 1px solid #b33a2b;
-      border-left: 4px solid #b33a2b;
-      padding: 0.75rem 1rem;
+      background: var(--danger-bg);
+      border: 1px solid #f7c1c1;
+      border-left: 4px solid var(--danger);
+      border-radius: 3px;
+      padding: 11px 12px;
       margin: 0.6rem 0 1rem;
       font-size: 0.92rem;
+      color: var(--danger);
     }
+    .alert strong { color: var(--danger); }
     .station-card.atypical {
-      border-color: #b33a2b;
+      border-color: var(--danger);
+      box-shadow: 0 0 0 1px var(--danger);
     }
     .table-wrap {
       overflow: auto;
       max-height: 520px;
       border: 1px solid var(--line);
+      border-radius: 8px;
       margin: 0.75rem 0;
+      background: var(--paper);
     }
     .note {
       font-size: 0.9rem;
       color: var(--muted);
     }
     .station-card {
-      background: var(--card);
+      background: #fbfdfe;
       border: 1px solid var(--line);
-      padding: 1rem 1.1rem 1.25rem;
+      border-radius: 8px;
+      padding: 14px;
       margin: 1.25rem 0;
     }
     .station-card .meta {
@@ -129,9 +163,11 @@
     .spectra-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1rem;
+      gap: 12px;
     }
     @media (max-width: 800px) {
+      header.site { padding: 16px 16px 14px; }
+      .wrap { padding: 12px 12px 28px; }
       .spectra-grid { grid-template-columns: 1fr; }
     }
     figure {
@@ -142,6 +178,7 @@
       height: auto;
       display: block;
       border: 1px solid var(--line);
+      border-radius: 6px;
       background: #fff;
     }
     figcaption {
@@ -150,38 +187,46 @@
       margin-top: 0.35rem;
     }
     .params {
-      background: var(--card);
-      border-left: 4px solid var(--accent);
-      padding: 0.85rem 1rem;
+      background: #fff5d8;
+      border-left: 4px solid var(--gold);
+      border-radius: 3px;
+      padding: 11px 12px;
       margin: 1rem 0;
     }
     footer {
-      margin-top: 3rem;
+      margin-top: 2.5rem;
       padding-top: 1rem;
       border-top: 1px solid var(--line);
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: var(--muted);
     }
+    footer strong {
+      font-family: "Source Code Pro", ui-monospace, monospace;
+      color: var(--navy);
+      font-weight: 700;
+    }
     code {
-      background: #ece8e1;
+      background: var(--sky);
       padding: 0.1em 0.35em;
+      border-radius: 3px;
       font-size: 0.92em;
+      font-family: "Source Code Pro", ui-monospace, monospace;
     }
     ul.compact li { margin: 0.25rem 0; }
   </style>
 </head>
 <body>
+  <header class="site">
+    <a class="home-link" href="https://kmauqs.github.io/NSR-10/index.html">NEXUS CREATIO — Inicio</a>
+    <h1>Terremoto del 10 de agosto de 2026 — Eje Cafetero (Colombia)</h1>
+    <p>
+      Evento <strong>SGC2026pqqmro</strong> · M 7.4 · San José del Palmar (Chocó) ·
+      Acelerogramas, espectros oficiales y productos derivados para evaluación de demanda sísmica.
+      Versión Markdown: <a href="README.md">README.md</a>
+      · Marco 03 · Informe de evento
+    </p>
+  </header>
   <div class="wrap">
-    <header class="hero">
-      <p class="kicker">Ingeniería sísmica · Datos RNAC / SGC</p>
-      <h1>Terremoto del 10 de agosto de 2026 — Eje Cafetero (Colombia)</h1>
-      <p class="muted">
-        Evento <strong>SGC2026pqqmro</strong> · M 7.4 · San José del Palmar (Chocó) ·
-        Acelerogramas, espectros oficiales y productos derivados para evaluación de demanda sísmica.
-        Versión Markdown: <a href="README.md">README.md</a>
-      </p>
-    </header>
-
     <nav class="toc" aria-label="Contenido">
       <strong>Contenido</strong>
       <ol>
@@ -354,7 +399,7 @@
         </tbody>
       </table>
     </div>
-    <p class="note">Filas en tono cálido: estaciones con acelerograma ANC y espectros PSA/DRS en el repositorio.
+    <p class="note">Filas en tono cielo: estaciones con acelerograma ANC y espectros PSA/DRS en el repositorio.
     Fila con borde rojo (CBOCA): <strong>dato atípico</strong> — no usar en análisis estadísticos ni modelaciones.</p>
 
     </section>
@@ -539,7 +584,7 @@
     <section id="analisis-propio">
       <h2>6.1 Señales depuradas y Espectros de Respuesta obtenidos mediante este análisis</h2>
       <p>
-        Productos derivados del código python del proyecto (<a href="procesar_sismo.py">procesar_sismo.py</a>):
+        Productos derivados del pipeline del proyecto (<a href="procesar_sismo.py">procesar_sismo.py</a>):
         acelerogramas corregidos/filtrados y espectros de respuesta elásticos recalculados
         (ζ = 5 %, Nigam–Jennings). Figuras en
         <a href="output/figuras/">output/figuras/</a>; CSV en
@@ -791,9 +836,10 @@
     </section>
 
     <footer>
-      Informe técnico de datos y procesamiento — evaluación de demanda sísmica.
+      <strong>NEXUS CREATIO</strong> · Informe técnico de datos y procesamiento — evaluación de demanda sísmica.
       Para diseño reglamentario prevalecen NSR vigente y la microzonificación oficial del municipio.
       · <a href="README.md">README.md</a>
+      · <a href="https://kmauqs.github.io/NSR-10/index.html">Portada NSR-10</a>
     </footer>
   </div>
 </body>
