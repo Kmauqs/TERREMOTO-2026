@@ -96,7 +96,7 @@
   "Pereira": {
     "departamento": "Risaralda",
     "municipio": "Pereira",
-    "fuente": "Microzonificación Pereira Decreto 386/2000",
+    "fuente": "Microzonificación Pereira Decreto 386/2000; aplicable también a Dosquebradas (Área Metropolitana de Centro Occidente).",
     "zonas": {
       "1": {
         "To": 0.05,
@@ -161,7 +161,11 @@
         "Fv": 2.57,
         "tipo": "nsr_like"
       }
-    }
+    },
+    "municipios_aplicables": [
+      "Pereira",
+      "Dosquebradas"
+    ]
   },
   "Manizales": {
     "departamento": "Caldas",

@@ -216,8 +216,15 @@
     if (!m || !state.micro) return null;
     const munN = norm(m.municipio);
     const deptN = norm(m.departamento);
+
+    // Área metropolitana de Centro Occidente: Dosquebradas usa microzonificación de Pereira
+    if (munN === "dosquebradas" && (deptN === "risaralda" || deptN.includes("risaralda"))) {
+      return state.micro.Pereira ? "Pereira" : null;
+    }
+
     for (const [k, v] of Object.entries(state.micro)) {
-      if (norm(v.municipio) === munN && (norm(v.departamento) === deptN || deptN.includes(norm(v.departamento)) || norm(v.departamento).includes(deptN))) {
+      const muns = [norm(v.municipio)].concat((v.municipios_aplicables || []).map(norm));
+      if (muns.includes(munN) && (norm(v.departamento) === deptN || deptN.includes(norm(v.departamento)) || norm(v.departamento).includes(deptN))) {
         return k;
       }
     }
@@ -264,7 +271,12 @@
       (z) => `Zona ${z}`,
       "— Zona de microzonificación —"
     );
-    $("ch7-micro-fuente").textContent = state.micro[key].fuente || "";
+    let fuente = state.micro[key].fuente || "";
+    if (norm(m.municipio) === "dosquebradas" && key === "Pereira") {
+      fuente +=
+        " · Aplicable a Dosquebradas (Área Metropolitana de Centro Occidente).";
+    }
+    $("ch7-micro-fuente").textContent = fuente;
   }
 
   function updateParams() {
@@ -367,10 +379,15 @@
         else if (zp.tipo === "armenia_num") spM = spectrumArmeniaNum(zp, uso.I, Tmax, dT);
         else spM = spectrumFromParams(zp, uso.I, Tmax, dT);
         const sdM = saToSd(spM.T, spM.Sa);
+        if (!exportCols.T_s.length) exportCols.T_s = spM.T.slice();
         exportCols.Sa_Micro_g = alignTo(exportCols.T_s, spM.T, spM.Sa);
         exportCols.Sd_Micro_m = alignTo(exportCols.T_s, spM.T, sdM);
+        const microLabel =
+          key === "Pereira" && norm(m.municipio) === "dosquebradas"
+            ? `Microzonificación Pereira (AMCO) zona ${zid}`
+            : `Microzonificación ${key} zona ${zid}`;
         datasetsSa.push({
-          label: `Microzonificación ${key} zona ${zid}`,
+          label: microLabel,
           data: spM.T.map((t, i) => ({ x: t, y: spM.Sa[i] })),
           borderColor: COLORS.micro,
           borderWidth: 2,
@@ -378,13 +395,38 @@
           tension: 0,
         });
         datasetsSd.push({
-          label: `Micro Sd ${key} zona ${zid}`,
+          label: `Sd ${microLabel}`,
           data: spM.T.map((t, i) => ({ x: t, y: sdM[i] })),
           borderColor: COLORS.micro,
           borderWidth: 2,
           pointRadius: 0,
           tension: 0,
         });
+        // Espectro de microzonificación reducido por R (negro, línea punteada)
+        if (applyR) {
+          const saMR = spM.Sa.map((v) => v / R);
+          const sdMR = saToSd(spM.T, saMR);
+          exportCols[`Sa_Micro_R${R}_g`] = alignTo(exportCols.T_s, spM.T, saMR);
+          exportCols[`Sd_Micro_R${R}_m`] = alignTo(exportCols.T_s, spM.T, sdMR);
+          datasetsSa.push({
+            label: `${microLabel} / R (R=${R})`,
+            data: spM.T.map((t, i) => ({ x: t, y: saMR[i] })),
+            borderColor: COLORS.nsrR,
+            borderWidth: 2,
+            borderDash: [6, 4],
+            pointRadius: 0,
+            tension: 0,
+          });
+          datasetsSd.push({
+            label: `Sd ${microLabel} / R (R=${R})`,
+            data: spM.T.map((t, i) => ({ x: t, y: sdMR[i] })),
+            borderColor: COLORS.nsrR,
+            borderWidth: 2,
+            borderDash: [6, 4],
+            pointRadius: 0,
+            tension: 0,
+          });
+        }
       }
     }
 

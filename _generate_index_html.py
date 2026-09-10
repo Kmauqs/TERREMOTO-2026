@@ -763,6 +763,7 @@ def main() -> None:
     }}
     .c-nsr {{ color: #c62828; }}
     .c-nsrr {{ color: #111; }}
+    .c-micror {{ color: #111; border-bottom: 2px dashed #111; padding-bottom: 1px; }}
     .c-micro {{ color: #ef6c00; }}
     .c-ew {{ color: #e000a8; }}
     .c-ns {{ color: #1a5cff; }}
@@ -983,6 +984,7 @@ def main() -> None:
         <span class="c-nsr">NSR-10 sin reducir</span>
         <span class="c-nsrr">NSR-10 / R</span>
         <span class="c-micro">Microzonificación</span>
+        <span class="c-micror">Microzonificación / R (punteada)</span>
         <span class="c-ew">Sa EW (2026)</span>
         <span class="c-ns">Sa NS (2026)</span>
         <span class="c-v">Sa V (2026)</span>
