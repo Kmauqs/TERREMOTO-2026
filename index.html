@@ -213,6 +213,104 @@
       font-family: "Source Code Pro", ui-monospace, monospace;
     }
     ul.compact li { margin: 0.25rem 0; }
+    /* Capítulo 7 — herramienta espectros */
+    .ch7-grid {
+      display: grid;
+      grid-template-columns: minmax(260px, 340px) 1fr;
+      gap: 1.1rem;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .ch7-grid { grid-template-columns: 1fr; }
+    }
+    .ch7-panel {
+      background: #fbfdfe;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.9rem 1rem;
+      box-shadow: 0 2px 10px #1232;
+    }
+    .ch7-panel label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--navy);
+      margin: 0.55rem 0 0.2rem;
+    }
+    .ch7-panel select, .ch7-panel input[type="number"] {
+      width: 100%;
+      padding: 0.35rem 0.45rem;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 0.9rem;
+    }
+    .ch7-check {
+      display: flex;
+      gap: 0.45rem;
+      align-items: flex-start;
+      font-size: 0.86rem;
+      margin: 0.45rem 0;
+      font-weight: 500;
+      color: var(--ink);
+    }
+    .ch7-check input { margin-top: 0.2rem; }
+    .ch7-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.85rem;
+    }
+    .ch7-actions button {
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 0.45rem 0.8rem;
+      font-size: 0.88rem;
+      cursor: pointer;
+    }
+    .ch7-actions button.secondary {
+      background: #fff;
+      color: var(--navy);
+      border: 1px solid var(--navy);
+    }
+    .ch7-actions button:hover { filter: brightness(1.08); }
+    .ch7-charts {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.9rem;
+    }
+    .ch7-chart-box {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.5rem;
+      height: 340px;
+    }
+    .ch7-legend-colors {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.1rem;
+      font-size: 0.82rem;
+      margin: 0.6rem 0 1rem;
+    }
+    .ch7-legend-colors span::before {
+      content: "";
+      display: inline-block;
+      width: 14px;
+      height: 3px;
+      margin-right: 0.35rem;
+      vertical-align: middle;
+      background: currentColor;
+    }
+    .c-nsr { color: #c62828; }
+    .c-nsrr { color: #111; }
+    .c-micro { color: #ef6c00; }
+    .c-ew { color: #e000a8; }
+    .c-ns { color: #1a5cff; }
+    .c-v { color: #00a86b; }
   </style>
 </head>
 <body>
@@ -237,6 +335,7 @@
         <li><a href="#estaciones">Estaciones — localización y PGA</a></li>
         <li><a href="#espectros-sgc">Espectros de respuesta obtenidos por el SGC</a></li>
         <li><a href="#analisis-propio">Señales depuradas y espectros de este análisis (6.1)</a></li>
+        <li><a href="#herramienta-espectros">Herramienta de espectros de diseño NSR-10 (7)</a></li>
         <li><a href="#referencias">Referencias</a></li>
       </ol>
     </nav>
@@ -816,8 +915,80 @@
     </section>
 
 
+    <section id="herramienta-espectros">
+      <h2>7. Herramienta — espectros elásticos de diseño (NSR-10 A.2.6)</h2>
+      <p>
+        Genera el <strong>espectro elástico de aceleraciones de diseño</strong> y el
+        <strong>espectro elástico de desplazamientos (m) de diseño</strong> según el
+        numeral <strong>A.2.6</strong> de la NSR-10, a partir de <em>Aa</em>, <em>Av</em>
+        del Apéndice A-4, coeficientes <em>Fa</em>/<em>Fv</em> (tablas A.2.4-3 y A.2.4-4),
+        coeficiente de importancia <em>I</em> (A.2.5) y, cuando aplique, parámetros de
+        microzonificación. Los desplazamientos por sismo se obtienen del espectro de
+        desplazamientos <em>Sd</em>. Opcionalmente se reduce el espectro por el
+        coeficiente de disipación de energía <em>R</em> (fuerzas de diseño del sistema
+        principal) y se superponen espectros del evento SGC2026pqqmro.
+      </p>
+      <p class="muted">
+        Base de municipios: Apéndice A-4 (misma fuente que
+        <a href="https://kmauqs.github.io/NSR-10/consolidado-ley-400-nsr10.html" target="_blank" rel="noopener">consolidado NSR-10</a>).
+        Microzonificación y PSA SGC: <a href="Espectros/ESPECTROS-SGC-SGC2026pqqmro.xlsx">ESPECTROS-SGC-SGC2026pqqmro.xlsx</a>.
+        Requiere abrir el informe mediante un servidor local (<code>fetch</code> de JSON).
+      </p>
+      <div class="ch7-legend-colors">
+        <span class="c-nsr">NSR-10 sin reducir</span>
+        <span class="c-nsrr">NSR-10 / R</span>
+        <span class="c-micro">Microzonificación</span>
+        <span class="c-ew">Sa EW (2026)</span>
+        <span class="c-ns">Sa NS (2026)</span>
+        <span class="c-v">Sa V (2026)</span>
+      </div>
+      <div class="ch7-grid">
+        <div class="ch7-panel">
+          <label for="ch7-dept">Departamento</label>
+          <select id="ch7-dept"></select>
+          <label for="ch7-mun">Municipio</label>
+          <select id="ch7-mun"></select>
+          <label for="ch7-uso">Grupo de uso (A.2.5) — coeficiente I</label>
+          <select id="ch7-uso"></select>
+          <label for="ch7-perfil">Tipo de perfil de suelo (tabla A.2.4-1)</label>
+          <select id="ch7-perfil"></select>
+          <div id="ch7-micro-wrap" hidden>
+            <p class="muted" id="ch7-micro-fuente" style="margin:0.6rem 0 0.2rem"></p>
+            <label class="ch7-check"><input type="checkbox" id="ch7-use-micro" /> Usar espectro de microzonificación (naranja)</label>
+            <label for="ch7-micro-zona">Zona / tipo de suelo (microzonificación)</label>
+            <select id="ch7-micro-zona"></select>
+          </div>
+          <label class="ch7-check"><input type="checkbox" id="ch7-apply-R" checked /> Aplicar coeficiente de disipación R (A.3 / uso en fuerzas de diseño)</label>
+          <label for="ch7-R">Coeficiente R</label>
+          <input type="number" id="ch7-R" min="1" max="8" step="0.5" value="3.5" />
+          <label class="ch7-check"><input type="checkbox" id="ch7-show-proc" /> Mostrar espectros de respuesta procesados (10-ago-2026, §6.1)</label>
+          <label for="ch7-proc-station">Estación (procesados)</label>
+          <select id="ch7-proc-station"></select>
+          <label class="ch7-check"><input type="checkbox" id="ch7-show-sgc" /> Mostrar espectros automáticos SGC (Excel PSA)</label>
+          <label for="ch7-sgc-station">Estación (SGC)</label>
+          <select id="ch7-sgc-station"></select>
+          <div class="ch7-actions">
+            <button type="button" id="ch7-update">Actualizar gráficos</button>
+            <button type="button" id="ch7-download" class="secondary">Descargar CSV</button>
+          </div>
+          <div id="ch7-params" style="margin-top:0.75rem"></div>
+          <p class="muted" id="ch7-status">Cargando datos…</p>
+        </div>
+        <div class="ch7-charts">
+          <div class="ch7-chart-box"><canvas id="ch7-chart-sa" aria-label="Espectro de aceleraciones"></canvas></div>
+          <div class="ch7-chart-box"><canvas id="ch7-chart-sd" aria-label="Espectro de desplazamientos"></canvas></div>
+        </div>
+      </div>
+      <p class="note" style="margin-top:0.8rem">
+        El CSV exportado tiene en la primera columna el periodo <code>T_s</code> y en las
+        columnas siguientes las ordenadas elásticas mostradas (Sa en g, Sd en m), incluyendo
+        NSR-10, NSR-10/R, microzonificación y, si aplica, componentes de estaciones 2026.
+        CBOCA permanece excluida del modo “todas” por ser dato atípico.
+      </p>
+    </section>
+
     <section id="referencias">
-      <h2>7. Referencias</h2>
+      <h2>8. Referencias</h2>
       <ol>
         <li>Servicio Geológico Colombiano (SGC). Red Nacional de Acelerógrafos (RNAC). Acelerogramas y espectros del evento <strong>SGC2026pqqmro</strong> (2026-08-10).</li>
         <li>SGC. ShakeMap — <code>info.json</code>, <code>grid.xml</code>, <code>stationlist.json</code>, <code>uncertainty.xml</code>.</li>
@@ -826,12 +997,13 @@
         <li>Boore, D. M. Trabajos sobre corrección de línea base y filtrado de acelerogramas.</li>
         <li>Chopra, A. K. <em>Dynamics of Structures.</em></li>
         <li>The ObsPy Development Team. ObsPy: A Python Framework for Seismology.</li>
-        <li>AIS. <strong>NSR-10</strong> — Reglamento Colombiano de Construcción Sismo Resistente, Título A.</li>
+        <li>AIS. <strong>NSR-10</strong> — Reglamento Colombiano de Construcción Sismo Resistente, Título A (en particular A.2.4–A.2.6, A.2.5, Apéndice A-4).</li>
         <li>INGEOMINAS / SGC. Microzonificación y respuesta de sitio en el Eje Cafetero.</li>
         <li>Documentación del proyecto:
           <a href="docs/metodos_procesamiento_y_espectro.md">metodología</a>,
           <a href="docs/guia_amplificacion_efectos_sitio.md">amplificación por sitio</a>.
         </li>
+        <li>Datos tabulares de apoyo: <a href="Espectros/ESPECTROS-SGC-SGC2026pqqmro.xlsx">ESPECTROS-SGC-SGC2026pqqmro.xlsx</a>; municipios A-4 en <code>output/data/municipios_nsr10.json</code>.</li>
       </ol>
     </section>
 
@@ -842,5 +1014,7 @@
       · <a href="https://kmauqs.github.io/NSR-10/index.html">Portada NSR-10</a>
     </footer>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="js/espectro-diseno-nsr10.js"></script>
 </body>
 </html>

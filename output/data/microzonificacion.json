@@ -1,0 +1,203 @@
+{
+  "Armenia": {
+    "departamento": "Quindío",
+    "municipio": "Armenia",
+    "fuente": "Microzonificación Armenia (hoja Micro_Armenia)",
+    "zonas": {
+      "A": {
+        "To": 0.1,
+        "Tc": 0.8,
+        "TL": 2.34,
+        "Aa": 0.25,
+        "Fa": 1.76,
+        "Fv": 2.63,
+        "tipo": "nsr_like"
+      },
+      "B": {
+        "To": 0.1,
+        "Tc": 0.7,
+        "TL": 2.05,
+        "Aa": 0.25,
+        "Fa": 1.6,
+        "Fv": 1.95,
+        "tipo": "nsr_like"
+      },
+      "C": {
+        "To": 0.05,
+        "Tc": 0.4,
+        "TL": 2.0,
+        "Aa": 0.25,
+        "Fa": 1.44,
+        "Fv": 1.2,
+        "tipo": "nsr_like"
+      },
+      "1": {
+        "To": 0.05,
+        "Tc": 0.5,
+        "TL": 2.2,
+        "Aa": 0.25,
+        "Fa": 1.76,
+        "Fv": 1.5,
+        "Sa_star": 1.3,
+        "Am": 0.6,
+        "An": 0.43,
+        "tipo": "armenia_num"
+      },
+      "2": {
+        "To": 0.1,
+        "Tc": 0.7,
+        "TL": 3.1,
+        "Aa": 0.25,
+        "Fa": 1.6,
+        "Fv": 1.5,
+        "Sa_star": 1.2,
+        "Am": 0.55,
+        "An": 0.56,
+        "tipo": "armenia_num"
+      },
+      "3": {
+        "To": 0.1,
+        "Tc": 1.1,
+        "TL": 5.2,
+        "Aa": 0.25,
+        "Fa": 1.44,
+        "Fv": 2,
+        "Sa_star": 1.3,
+        "Am": 0.55,
+        "An": 0.715,
+        "tipo": "armenia_num"
+      },
+      "4": {
+        "To": 0.15,
+        "Tc": 0.9,
+        "TL": 4.7,
+        "Aa": 0.25,
+        "Fa": null,
+        "Fv": 2.6,
+        "Sa_star": 0.9,
+        "Am": 0.35,
+        "An": 0.31,
+        "tipo": "armenia_num"
+      },
+      "5": {
+        "To": 0.05,
+        "Tc": 0.35,
+        "TL": 1.85,
+        "Aa": 0.25,
+        "Fa": null,
+        "Fv": 1.3,
+        "Sa_star": 1.3,
+        "Am": 0.5,
+        "An": 0.35,
+        "tipo": "armenia_num"
+      }
+    }
+  },
+  "Pereira": {
+    "departamento": "Risaralda",
+    "municipio": "Pereira",
+    "fuente": "Microzonificación Pereira Decreto 386/2000",
+    "zonas": {
+      "1": {
+        "To": 0.05,
+        "Tc": 0.4,
+        "TL": 2,
+        "Aa": 0.25,
+        "Fa": 1.76,
+        "Fv": 1.47,
+        "tipo": "nsr_like"
+      },
+      "2": {
+        "To": 0.05,
+        "Tc": 0.5,
+        "TL": 2.5,
+        "Aa": 0.25,
+        "Fa": 1.6,
+        "Fv": 1.67,
+        "tipo": "nsr_like"
+      },
+      "3": {
+        "To": 0.1,
+        "Tc": 0.8,
+        "TL": 4,
+        "Aa": 0.25,
+        "Fa": 1.44,
+        "Fv": 2.4,
+        "tipo": "nsr_like"
+      },
+      "4": {
+        "To": 0.1,
+        "Tc": 0.9,
+        "TL": 4.5,
+        "Aa": 0.25,
+        "Fa": 1.28,
+        "Fv": 2.4,
+        "tipo": "nsr_like"
+      },
+      "5": {
+        "To": 0.05,
+        "Tc": 0.32,
+        "TL": 1.6,
+        "Aa": 0.25,
+        "Fa": 1.76,
+        "Fv": 1.17,
+        "tipo": "nsr_like"
+      },
+      "6": {
+        "To": 0.1,
+        "Tc": 0.8,
+        "TL": 4,
+        "Aa": 0.25,
+        "Fa": 1.6,
+        "Fv": 2.67,
+        "tipo": "nsr_like"
+      },
+      "7": {
+        "To": 0.05,
+        "Tc": 0.7,
+        "TL": 3.5,
+        "Aa": 0.25,
+        "Fa": 1.76,
+        "Fv": 2.57,
+        "tipo": "nsr_like"
+      }
+    }
+  },
+  "Manizales": {
+    "departamento": "Caldas",
+    "municipio": "Manizales",
+    "fuente": "Microzonificación Manizales Acuerdo 0958 de 2017",
+    "zonas": {
+      "A": {
+        "To": 0.1,
+        "Tc": 0.65,
+        "TL": 3.25,
+        "Am": 0.44,
+        "An": 0.44,
+        "Fa": 1,
+        "Fv": 1.63,
+        "tipo": "manizales"
+      },
+      "B": {
+        "To": 0.1,
+        "Tc": 0.5,
+        "TL": 2.5,
+        "Am": 0.4,
+        "An": 0.4,
+        "Fa": 1,
+        "Fv": 1.25,
+        "tipo": "manizales"
+      },
+      "C": {
+        "To": 0.1,
+        "Tc": 0.5,
+        "TL": 2.5,
+        "Am": 0.3,
+        "An": 0.3,
+        "Fa": 1,
+        "Fv": 1.25,
+        "tipo": "manizales"
+      }
+    }
+  }
+}
