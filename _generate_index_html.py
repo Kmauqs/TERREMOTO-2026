@@ -968,11 +968,11 @@ def main() -> None:
         <strong>espectro elástico de desplazamientos (m) de diseño</strong> según el
         numeral <strong>A.2.6</strong> de la NSR-10, a partir de <em>Aa</em>, <em>Av</em>
         del Apéndice A-4, coeficientes <em>Fa</em>/<em>Fv</em> (tablas A.2.4-3 y A.2.4-4),
-        coeficiente de importancia <em>I</em> (A.2.5) y, cuando aplique, parámetros de
-        microzonificación. Los desplazamientos por sismo se obtienen del espectro de
+        coeficiente de importancia <em>I</em> (A.2.5) y, cuando aplique, Espectro de
+        Microzonificación Sísmica local. Los desplazamientos por sismo se obtienen del espectro de
         desplazamientos <em>Sd</em>. Opcionalmente se reduce el espectro por el
         coeficiente de disipación de energía <em>R</em> (fuerzas de diseño del sistema
-        principal) y se superponen espectros del evento SGC2026pqqmro.
+        principal) y se superponen espectros del evento SGC2026pqqmro (terremoto de 10 de agosto de 2026).
       </p>
       <p class="muted">
         Base de municipios: Apéndice A-4 (misma fuente que
@@ -1008,10 +1008,10 @@ def main() -> None:
           <label class="ch7-check"><input type="checkbox" id="ch7-apply-R" checked /> Aplicar coeficiente de disipación R (A.3 / uso en fuerzas de diseño)</label>
           <label for="ch7-R">Coeficiente R</label>
           <input type="number" id="ch7-R" min="1" max="8" step="0.5" value="3.5" />
-          <label class="ch7-check"><input type="checkbox" id="ch7-show-proc" /> Mostrar espectros de respuesta procesados (10-ago-2026, §6.1)</label>
+          <label class="ch7-check"><input type="checkbox" id="ch7-show-proc" /> Mostrar espectros de respuesta procesados (10-ago-2026)</label>
           <label for="ch7-proc-station">Estación (procesados)</label>
           <select id="ch7-proc-station"></select>
-          <label class="ch7-check"><input type="checkbox" id="ch7-show-sgc" /> Mostrar espectros automáticos SGC (Excel PSA)</label>
+          <label class="ch7-check"><input type="checkbox" id="ch7-show-sgc" /> Mostrar espectros automáticos SGC <a href="https://sgc.gov.co/detallesismo/SGC2026pqqmro/sm" target="_blank" rel="noopener noreferrer"> (Sismo SGC2026pqqmro) ↗</a></label>
           <label for="ch7-sgc-station">Estación (SGC)</label>
           <select id="ch7-sgc-station"></select>
           <div class="ch7-actions">
@@ -1028,8 +1028,7 @@ def main() -> None:
       </div>
       <p class="note" style="margin-top:0.8rem">
         El CSV exportado tiene en la primera columna el periodo <code>T_s</code> y en las
-        columnas siguientes las ordenadas elásticas mostradas (Sa en g, Sd en m), incluyendo
-        NSR-10, NSR-10/R, microzonificación y, si aplica, componentes de estaciones 2026.
+        columnas siguientes las ordenadas elásticas mostradas (Sa en g, Sd en m).
         CBOCA permanece excluida del modo “todas” por ser dato atípico.
       </p>
     </section>
