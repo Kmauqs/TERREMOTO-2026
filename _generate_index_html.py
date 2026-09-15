@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Genera index.html del informe del sismo 10-ago-2026 y figuras de §6.1."""
+"""Genera index.html del informe del sismo 10-ago-2026 y figuras del análisis propio."""
 from __future__ import annotations
 
 import csv
@@ -319,7 +319,7 @@ def analysis_limitations_table() -> str:
         (
             "Comparación formal SGC vs. espectro propio",
             "Los PSA/DRS oficiales (§6) son referencia visual; el pipeline recalcula el espectro "
-            "de forma independiente (§6.1).",
+            "de forma independiente (§7).",
         ),
         (
             "Estación CBOCA (Pereira)",
@@ -402,7 +402,7 @@ def analysis_section(figures: dict[str, dict[str, Path | str]]) -> str:
 
     return f"""
     <section id="analisis-propio">
-      <h2>6.1 Señales depuradas y Espectros de Respuesta obtenidos mediante este análisis</h2>
+      <h2>7. Señales depuradas y Espectros de Respuesta obtenidos mediante este análisis</h2>
       <p>
         Productos derivados del pipeline del proyecto (<a href="procesar_sismo.py">procesar_sismo.py</a>):
         acelerogramas corregidos/filtrados y espectros de respuesta elásticos recalculados
@@ -669,7 +669,7 @@ def main() -> None:
       font-family: "Source Code Pro", ui-monospace, monospace;
     }}
     ul.compact li {{ margin: 0.25rem 0; }}
-    /* Capítulo 7 — herramienta espectros */
+    /* Capítulo 8 — herramienta espectros */
     .ch7-grid {{
       display: grid;
       grid-template-columns: minmax(260px, 340px) 1fr;
@@ -785,15 +785,15 @@ def main() -> None:
     <nav class="toc" aria-label="Contenido">
       <strong>Contenido</strong>
       <ol>
-        <li><a href="#resumen">Resumen del sismo</a></li>
-        <li><a href="#sgc">Información recopilada del SGC</a></li>
-        <li><a href="#metodologia">Metodología de procesamiento</a></li>
-        <li><a href="#amplificacion">Factores de amplificación por sitio</a></li>
-        <li><a href="#estaciones">Estaciones — localización y PGA</a></li>
-        <li><a href="#espectros-sgc">Espectros de respuesta obtenidos por el SGC</a></li>
-        <li><a href="#analisis-propio">Señales depuradas y espectros de este análisis (6.1)</a></li>
-        <li><a href="#herramienta-espectros">Herramienta de espectros de diseño NSR-10 (7)</a></li>
-        <li><a href="#referencias">Referencias</a></li>
+        <li><a href="#resumen">1. Resumen del sismo</a></li>
+        <li><a href="#sgc">2. Información recopilada del SGC</a></li>
+        <li><a href="#metodologia">3. Metodología de procesamiento</a></li>
+        <li><a href="#amplificacion">4. Factores de amplificación por sitio</a></li>
+        <li><a href="#estaciones">5. Estaciones — localización y PGA</a></li>
+        <li><a href="#espectros-sgc">6. Espectros de respuesta obtenidos por el SGC</a></li>
+        <li><a href="#analisis-propio">7. Señales depuradas y espectros de este análisis</a></li>
+        <li><a href="#herramienta-espectros">8. Herramienta de espectros de diseño NSR-10</a></li>
+        <li><a href="#referencias">9. Referencias</a></li>
       </ol>
     </nav>
 
@@ -962,7 +962,7 @@ def main() -> None:
 {analysis_section(figures)}
 
     <section id="herramienta-espectros">
-      <h2>7. Herramienta — espectros elásticos de diseño (NSR-10 A.2.6)</h2>
+      <h2>8. Herramienta — espectros elásticos de diseño (NSR-10 A.2.6)</h2>
       <p>
         Genera el <strong>espectro elástico de aceleraciones de diseño</strong> y el
         <strong>espectro elástico de desplazamientos (m) de diseño</strong> según el
@@ -1034,11 +1034,12 @@ def main() -> None:
     </section>
 
     <section id="referencias">
-      <h2>8. Referencias</h2>
+      <h2>9. Referencias</h2>
       <ol>
         <li>Servicio Geológico Colombiano (SGC). Red Nacional de Acelerógrafos (RNAC). Acelerogramas y espectros del evento <strong>SGC2026pqqmro</strong> (2026-08-10).</li>
         <li>SGC. ShakeMap — <code>info.json</code>, <code>grid.xml</code>, <code>stationlist.json</code>, <code>uncertainty.xml</code>.</li>
-        <li>Nigam, N. C. &amp; Jennings, P. C. (1969). <em>Calculation of Response Spectra from Strong-Motion Earthquake Records.</em> BSSA, 59(2), 909–922.</li>
+        <li>Nigam, N. C. &amp; Jennings, P. C. (1969). <em>Calculation of Response Spectra from Strong-Motion Earthquake Records.</em> BSSA, 59(2), 909–922.
+          <a href="docs/Nigam%E2%80%93Jennings-Calculation%20of%20Response%20Spectra%20from%20Strong-motion%20Earthquake%20Records-1969.pdf" target="_blank" rel="noopener">PDF</a>.</li>
         <li>Butterworth, S. (1930). <em>On the Theory of Filter Amplifiers.</em> Wireless Engineer.</li>
         <li>Boore, D. M. Trabajos sobre corrección de línea base y filtrado de acelerogramas.</li>
         <li>Chopra, A. K. <em>Dynamics of Structures.</em></li>
