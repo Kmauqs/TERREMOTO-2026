@@ -60,7 +60,7 @@ Tabla de productos descargados o derivados directamente de fuentes SGC / RNAC, c
 
 ### 3.1 Resumen técnico
 
-Sobre los acelerogramas `.ANC` (aceleración en cm/s², componentes EW, VER y NS) se aplicó la siguiente cadena, implementada en Python con **ObsPy**, **NumPy**, **SciPy** y **Numba**:
+Sobre los acelerogramas **`.ANC`** (ASCII, cm/s²) y/o **MiniSEED** (ObsPy; prioriza `.ANC` si hay ambas para la misma estación) se aplicó la siguiente cadena, implementada en Python con **ObsPy**, **NumPy**, **SciPy** y **Numba**:
 
 1. **Corrección de línea base:** remoción de media (demean), detrend lineal por mínimos cuadrados y ventana coseno (taper 5 %) para forzar extremos ≈ 0 y evitar integración espuria a velocidad/desplazamiento.
 2. **Filtrado pasabanda:** Butterworth de 4 polos, banda **0.10–25 Hz**, aplicado en fase cero (`filtfilt`), orientado a conservar el contenido frecuencial relevante para edificaciones y atenuar ruido de muy baja y muy alta frecuencia.

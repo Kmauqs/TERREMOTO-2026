@@ -20,9 +20,9 @@ El flujo produce, por estación, un CSV de aceleración ajustada y un CSV de esp
 
 ## 2. Datos de entrada
 
-### 2.1 Formato de registro
+### 2.1 Formatos de registro
 
-Los archivos `.ANC` del Servicio Geológico Colombiano son acelerogramas en texto ASCII con:
+**`.ANC` (SGC / RNAC)** — acelerogramas ASCII con:
 
 | Campo | Descripción |
 |-------|-------------|
@@ -31,6 +31,17 @@ Los archivos `.ANC` del Servicio Geológico Colombiano son acelerogramas en text
 | Muestreo típico | Δt = 0.005 s (200 Hz); CTRUJ usa Δt = 0.01 s |
 | Duración | ~510 s |
 | Etiqueta SGC | “TIPO DE DATOS: NO CORREGIDO” (requiere post-proceso) |
+
+**MiniSEED** — formas de onda binarias leídas con ObsPy (`*.mseed` / `*.miniseed` en `SGC-Data/`):
+
+| Aspecto | Comportamiento en `procesar_sismo.py` |
+|---------|--------------------------------------|
+| Componentes | Canales SEED → EW/NS/VER (`HNE`/`HNN`/`HNZ`, `HH*`, etc.) |
+| Preferencia | Acelerógrafos `HN*` / location `10` sobre velocímetros `HH*` |
+| Prioridad vs ANC | Si existe `.ANC` de la misma estación, se omite el MiniSEED |
+| Ventana | Si el origen del evento cae en el registro: [t₀−30 s, t₀+480 s]; si no, ~510 s centrados en el pico horizontal |
+| Unidades | Se asume cm/s²; si las amplitudes parecen cuentas, aviso y demean. Opcional: `MSEED_COUNTS_PER_CMS2` |
+| Metadatos | Lat/lon/distancias suelen faltar (NaN / nulo) frente a los `.ANC` |
 
 ### 2.2 Modelo de la señal bruta
 
@@ -46,7 +57,7 @@ No se aplica corrección instrumental de transferencia del sensor en este pipeli
 
 | Librería | Uso |
 |----------|-----|
-| **ObsPy** | Contenedor `Trace`/`Stream`, metadatos, exportación MiniSEED |
+| **ObsPy** | Lectura MiniSEED, contenedor `Trace`/`Stream`, metadatos, exportación MiniSEED |
 | **NumPy / SciPy** | Álgebra, filtro Butterworth, `filtfilt` |
 | **Numba** | Aceleración del integrador Nigam–Jennings |
 
@@ -248,11 +259,12 @@ La componente vertical se procesa por separado (mismo modelo SDOF).
 ## 6. Flujo completo del procesamiento
 
 ```
-Archivo .ANC (EW, VER, NS)
+Archivo .ANC o MiniSEED (EW, VER, NS)
         │
         ▼
 ┌───────────────────────┐
 │ 1. Lectura + metadatos│
+│    (prioridad .ANC)   │
 └───────────┬───────────┘
             ▼
 ┌───────────────────────┐

@@ -1,5 +1,5 @@
 """
-Procesamiento de acelerogramas SGC (.ANC) — Sismo 10-ago-2026 Eje Cafetero.
+Procesamiento de acelerogramas SGC (.ANC y MiniSEED) — Sismo 10-ago-2026 Eje Cafetero.
 Evento: SGC2026pqqmro | M7.4 | San José del Palmar - Chocó
 
 AVISO DE CALIDAD: la estación CBOCA (Pereira) produce amplitudes atípicas respecto
@@ -8,11 +8,13 @@ Puede estar defectuosa; NO usar CBOCA en análisis estadísticos ni modelaciones
 detalladas. Ver README.md y docs/metodos_procesamiento_y_espectro.md §9.1.
 
 Pipeline:
-  1) Lectura de estaciones .ANC
+  1) Lectura de estaciones .ANC y/o MiniSEED (ObsPy)
   2) Corrección de línea base (demean + detrend + taper) → extremos ~0
   3) Filtro pasabanda Butterworth 0.10–25 Hz (ruido fuera del rango estructural)
   4) Export CSV de aceleración ajustada
   5) Espectro de respuesta elástico (ζ=5%, T=0–4 s) → CSV por estación
+
+Prioridad: si hay .ANC y MiniSEED para la misma estación, se usa el .ANC.
 """
 
 from __future__ import annotations
@@ -20,11 +22,12 @@ from __future__ import annotations
 import csv
 import json
 import re
+from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
 from numba import njit
-from obspy import Stream, Trace, UTCDateTime
+from obspy import Stream, Trace, UTCDateTime, read
 from scipy.signal import butter, filtfilt
 
 # ---------------------------------------------------------------------------
@@ -44,6 +47,13 @@ FREQ_LOW = 0.10  # Hz — corta deriva / ruido de muy baja frecuencia
 FREQ_HIGH = 25.0  # Hz — elimina ruido de muy alta frecuencia
 TAPER_PCT = 0.05  # 5% cosine taper en cada extremo
 G_CMS2 = 981.0  # cm/s^2 por g
+# Ventana de análisis para MiniSEED largos (s antes / después del origen o del pico)
+MSEED_PRE_EVENT_S = 30.0
+MSEED_POST_EVENT_S = 480.0
+MSEED_WINDOW_S = MSEED_PRE_EVENT_S + MSEED_POST_EVENT_S
+# Sensibilidad opcional: cuentas → cm/s^2 (data_cms2 = data_counts / MSEED_COUNTS_PER_CMS2).
+# None = asumir que el MiniSEED ya está en cm/s^2 (o unidades coherentes tras demean).
+MSEED_COUNTS_PER_CMS2: float | None = None
 
 # Estaciones con registro no confiable para análisis / modelación
 ATYPICAL_STATIONS = {
@@ -53,6 +63,12 @@ ATYPICAL_STATIONS = {
         "No emplear en análisis estadísticos ni modelaciones detalladas."
     ),
 }
+
+# Mapeo de códigos de canal SEED → componente de ingeniería
+_CHAN_EW = {"HNE", "BHE", "EHE", "HHE", "ENE", "HN1", "BH1", "E"}
+_CHAN_NS = {"HNN", "BHN", "EHN", "HHN", "ENN", "HN2", "BH2", "N"}
+_CHAN_VER = {"HNZ", "BHZ", "EHZ", "HHZ", "ENZ", "Z"}
+
 
 
 def parse_anc(path: Path) -> dict:
@@ -122,7 +138,228 @@ def parse_anc(path: Path) -> dict:
         "ver": ver_a,
         "ns": ns_a,
         "filename": path.name,
+        "source_format": "ANC",
     }
+
+
+def _channel_component(code: str) -> str | None:
+    """Clasifica canal SEED en ew / ns / ver."""
+    c = (code or "").upper().strip()
+    if c in _CHAN_EW:
+        return "ew"
+    if c in _CHAN_NS:
+        return "ns"
+    if c in _CHAN_VER:
+        return "ver"
+    if len(c) >= 1:
+        last = c[-1]
+        if last in ("E", "1"):
+            return "ew"
+        if last in ("N", "2"):
+            return "ns"
+        if last in ("Z", "3"):
+            return "ver"
+    return None
+
+
+def _band_rank(channel: str) -> int:
+    """Prioriza acelerógrafos (HN/BN/EN) sobre velocímetros (HH/BH/EH)."""
+    c = channel.upper()
+    if c.startswith(("HN", "BN", "EN")):
+        return 0
+    if c.startswith(("HH", "BH", "EH")):
+        return 1
+    return 2
+
+
+def _pick_component_traces(traces: list[Trace]) -> dict[str, Trace] | None:
+    """Elige un trío EW/NS/VER priorizando HN* y location '10'."""
+    by_comp: dict[str, list[Trace]] = defaultdict(list)
+    for tr in traces:
+        comp = _channel_component(tr.stats.channel)
+        if comp:
+            by_comp[comp].append(tr)
+    if not all(k in by_comp for k in ("ew", "ns", "ver")):
+        return None
+
+    def score(tr: Trace) -> tuple:
+        loc = tr.stats.location or ""
+        return (_band_rank(tr.stats.channel), 0 if loc in ("10", "00", "") else 1, loc, tr.stats.channel)
+
+    return {comp: sorted(cands, key=score)[0] for comp, cands in by_comp.items()}
+
+
+def _align_three(tr_ew: Trace, tr_ns: Trace, tr_ver: Trace) -> tuple[np.ndarray, np.ndarray, np.ndarray, float, UTCDateTime]:
+    """Recorta al intervalo común y remuestrea a la delta mínima si hace falta."""
+    st = Stream([tr_ew.copy(), tr_ns.copy(), tr_ver.copy()])
+    st.merge(method=1, fill_value="interpolate")
+    start = max(tr.stats.starttime for tr in st)
+    end = min(tr.stats.endtime for tr in st)
+    if end <= start:
+        raise ValueError("Sin solape temporal entre componentes MiniSEED")
+    st.trim(start, end, pad=False)
+    dt = min(tr.stats.delta for tr in st)
+    for tr in st:
+        if abs(tr.stats.delta - dt) > 1e-9:
+            tr.interpolate(sampling_rate=1.0 / dt, method="lanczos", a=4)
+    n = min(tr.stats.npts for tr in st)
+    for tr in st:
+        tr.data = tr.data[:n]
+    ordered: dict[str, np.ndarray] = {}
+    for tr in st:
+        comp = _channel_component(tr.stats.channel)
+        if comp:
+            ordered[comp] = tr.data.astype(np.float64)
+    return ordered["ew"], ordered["ver"], ordered["ns"], float(dt), start
+
+
+def _window_arrays(
+    ew: np.ndarray,
+    ver: np.ndarray,
+    ns: np.ndarray,
+    dt: float,
+    start: UTCDateTime,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, str]:
+    """
+    Recorta ventana de análisis:
+    - si el origen del evento cae en el registro → [t0-pre, t0+post]
+    - si no → ventana de MSEED_WINDOW_S centrada en el pico de |acc| horizontal
+    """
+    n = len(ew)
+    duration = (n - 1) * dt
+    end = start + duration
+    note = "full"
+
+    if start <= EVENT_ORIGIN <= end:
+        i0 = max(0, int((EVENT_ORIGIN - MSEED_PRE_EVENT_S - start) / dt))
+        i1 = min(n, int((EVENT_ORIGIN + MSEED_POST_EVENT_S - start) / dt))
+        note = f"event_window [{EVENT_ORIGIN - MSEED_PRE_EVENT_S} .. {EVENT_ORIGIN + MSEED_POST_EVENT_S}]"
+    else:
+        # pico en media geométrica aproximada |ew|+|ns|
+        env = np.abs(ew) + np.abs(ns)
+        peak = int(np.argmax(env))
+        half = int(MSEED_WINDOW_S / (2 * dt))
+        i0 = max(0, peak - half)
+        i1 = min(n, i0 + int(MSEED_WINDOW_S / dt))
+        i0 = max(0, i1 - int(MSEED_WINDOW_S / dt))
+        note = (
+            f"peak_window (origen {EVENT_ORIGIN} fuera del registro "
+            f"{start} .. {end}); centrado en muestra {peak}"
+        )
+
+    if i1 - i0 < int(5.0 / dt):
+        raise ValueError(f"Ventana MiniSEED demasiado corta ({i1 - i0} muestras)")
+
+    return ew[i0:i1].copy(), ver[i0:i1].copy(), ns[i0:i1].copy(), note
+
+
+def parse_mseed(path: Path) -> list[dict]:
+    """
+    Lee un archivo MiniSEED (posiblemente multi-estación) y devuelve registros
+    con la misma estructura que parse_anc (aceleración EW/VER/NS).
+    """
+    st = read(str(path))
+    by_station: dict[str, list[Trace]] = defaultdict(list)
+    for tr in st:
+        by_station[tr.stats.station].append(tr)
+
+    records: list[dict] = []
+    for station, traces in sorted(by_station.items()):
+        picked = _pick_component_traces(traces)
+        if not picked:
+            print(f"  [aviso] {path.name} / {station}: no se halló trío EW-NS-VER; omitido")
+            continue
+        try:
+            ew, ver, ns, dt, start = _align_three(picked["ew"], picked["ns"], picked["ver"])
+            ew, ver, ns, win_note = _window_arrays(ew, ver, ns, dt, start)
+        except Exception as exc:
+            print(f"  [aviso] {path.name} / {station}: {exc}; omitido")
+            continue
+
+        raw_mean = float(np.mean(np.abs(ew)))
+        count_like = raw_mean > 1.0e4
+        if MSEED_COUNTS_PER_CMS2 and MSEED_COUNTS_PER_CMS2 > 0:
+            ew = ew / MSEED_COUNTS_PER_CMS2
+            ver = ver / MSEED_COUNTS_PER_CMS2
+            ns = ns / MSEED_COUNTS_PER_CMS2
+            units = "cm/s^2"
+        else:
+            units = "cm/s^2 (asumido)"
+            if count_like:
+                units = "counts->demean (verificar sensibilidad)"
+
+        records.append(
+            {
+                "station": station,
+                "lat": float("nan"),
+                "lon": float("nan"),
+                "repi_km": None,
+                "rhyp_km": None,
+                "dt": dt,
+                "npts": len(ew),
+                "duration_s": (len(ew) - 1) * dt,
+                "units": units,
+                "ew": ew,
+                "ver": ver,
+                "ns": ns,
+                "filename": path.name,
+                "source_format": "MiniSEED",
+                "mseed_window": win_note,
+                "network": picked["ew"].stats.network,
+                "location": picked["ew"].stats.location,
+                "mseed_count_like": count_like and not (MSEED_COUNTS_PER_CMS2 and MSEED_COUNTS_PER_CMS2 > 0),
+                "mseed_raw_mean_abs": raw_mean,
+            }
+        )
+    return records
+
+
+def discover_input_records() -> list[dict]:
+    """Descubre .ANC y MiniSEED; si hay ambas para una estación, prioriza .ANC."""
+    anc_files: list[Path] = []
+    seen_anc: set[str] = set()
+    for p in sorted(DATA_DIR.glob("*.anc")) + sorted(DATA_DIR.glob("*.ANC")):
+        key = p.name.lower()
+        if key not in seen_anc:
+            seen_anc.add(key)
+            anc_files.append(p)
+
+    mseed_files: list[Path] = []
+    seen_mseed: set[str] = set()
+    for pattern in ("*.mseed", "*.MSEED", "*.miniseed", "*.MiniSEED"):
+        for p in sorted(DATA_DIR.glob(pattern)):
+            key = p.name.lower()
+            if key not in seen_mseed:
+                seen_mseed.add(key)
+                mseed_files.append(p)
+
+    by_station: dict[str, dict] = {}
+    for path in anc_files:
+        rec = parse_anc(path)
+        by_station[rec["station"]] = rec
+        print(f"  [ANC] {rec['station']} <- {path.name}")
+
+    for path in mseed_files:
+        print(f"  [MSEED] leyendo {path.name}...")
+        for rec in parse_mseed(path):
+            stn = rec["station"]
+            if stn in by_station and by_station[stn].get("source_format") == "ANC":
+                print(f"  [MSEED] {stn}: omitido (ya hay .ANC)")
+                continue
+            if stn in by_station and by_station[stn].get("source_format") == "MiniSEED":
+                print(f"  [MSEED] {stn}: reemplaza registro previo de {by_station[stn]['filename']}")
+            if rec.get("mseed_count_like"):
+                print(
+                    f"  [aviso] {stn}: amplitudes tipicas de cuentas "
+                    f"(media |EW|~{rec.get('mseed_raw_mean_abs', 0):.0f}). "
+                    "Sin respuesta instrumental; se demeanea en el pipeline. "
+                    "Defina MSEED_COUNTS_PER_CMS2 si conoce la sensibilidad."
+                )
+            by_station[stn] = rec
+            print(f"  [MSEED] {stn} <- {path.name} | {rec.get('mseed_window', '')}")
+
+    return [by_station[k] for k in sorted(by_station)]
+
 
 
 def cosine_taper(n: int, pct: float = TAPER_PCT) -> np.ndarray:
@@ -352,40 +589,41 @@ def process_all() -> None:
     OUT_SENALES.mkdir(parents=True, exist_ok=True)
     OUT_ESPECTROS.mkdir(parents=True, exist_ok=True)
 
-    anc_files = sorted(DATA_DIR.glob("*.anc")) + sorted(DATA_DIR.glob("*.ANC"))
-    # dedupe
-    seen = set()
-    files = []
-    for p in anc_files:
-        if p.name.lower() not in seen:
-            seen.add(p.name.lower())
-            files.append(p)
-
-    if not files:
-        raise SystemExit(f"No se encontraron archivos .ANC en {DATA_DIR}")
-
     print("=" * 72)
     print("SISMO 10-ago-2026 | SGC2026pqqmro | M7.4 San José del Palmar - Chocó")
     print(f"Filtro: Butterworth 4 polos, {FREQ_LOW}-{FREQ_HIGH} Hz | damping={DAMPING*100:.0f}%")
+    print(f"Entrada: .ANC y MiniSEED en {DATA_DIR} (prioridad .ANC si hay ambas)")
     print("=" * 72)
+
+    print("\nDescubrimiento de registros...")
+    records = discover_input_records()
+    if not records:
+        raise SystemExit(f"No se encontraron .ANC ni MiniSEED en {DATA_DIR}")
 
     periods = np.arange(0.0, T_MAX + 0.5 * DT_SPECTRUM, DT_SPECTRUM)
     catalog = []
 
-    for path in files:
-        print(f"\n>>> {path.name}")
-        rec = parse_anc(path)
+    for rec in records:
         stn = rec["station"]
+        src = rec.get("source_format", "?")
+        print(f"\n>>> {rec['filename']} [{src}] -> {stn}")
+        lat_s = f"{rec['lat']:.5f}" if rec["lat"] == rec["lat"] else "n/d"
+        lon_s = f"{rec['lon']:.5f}" if rec["lon"] == rec["lon"] else "n/d"
         print(
-            f"    Estación {stn} | lat={rec['lat']:.5f}, lon={rec['lon']:.5f} | "
-            f"Repi={rec['repi_km']} km | dt={rec['dt']} s | n={rec['npts']}"
+            f"    Estacion {stn} | lat={lat_s}, lon={lon_s} | "
+            f"Repi={rec['repi_km']} km | dt={rec['dt']} s | n={rec['npts']} | unidades={rec['units']}"
         )
+        if rec.get("mseed_window"):
+            print(f"    Ventana MiniSEED: {rec['mseed_window']}")
 
         ew = baseline_and_filter(rec["ew"], rec["dt"])
         ver = baseline_and_filter(rec["ver"], rec["dt"])
         ns = baseline_and_filter(rec["ns"], rec["dt"])
 
-        # Verificación extremos ~0
+        # Actualizar npts/duration tras ventana MiniSEED
+        rec["npts"] = len(ew)
+        rec["duration_s"] = (len(ew) - 1) * rec["dt"]
+
         ends = {
             "EW": (ew[0], ew[-1]),
             "VER": (ver[0], ver[-1]),
@@ -399,7 +637,6 @@ def process_all() -> None:
         write_signal_csv(csv_sig, t, ew, ver, ns)
         print(f"    Senal -> {csv_sig.name}")
 
-        # Espectros
         print("    Calculando espectro de respuesta elastico...")
         sa_ew, sv_ew, sd_ew = elastic_response_spectrum(ew, rec["dt"], periods, DAMPING)
         sa_ns, sv_ns, sd_ns = elastic_response_spectrum(ns, rec["dt"], periods, DAMPING)
@@ -426,7 +663,6 @@ def process_all() -> None:
         pga_ew = float(np.max(np.abs(ew))) / G_CMS2
         pga_ns = float(np.max(np.abs(ns))) / G_CMS2
         pga_ver = float(np.max(np.abs(ver))) / G_CMS2
-        # Sa pico horizontal (media geométrica) en T>0
         sa_peak = float(np.max(sa_geo[1:])) / G_CMS2 if len(sa_geo) > 1 else 0.0
         t_peak = float(periods[1 + int(np.argmax(sa_geo[1:]))]) if len(sa_geo) > 1 else 0.0
 
@@ -438,20 +674,21 @@ def process_all() -> None:
         catalog.append(
             {
                 "station": stn,
-                "latitude": rec["lat"],
-                "longitude": rec["lon"],
+                "latitude": rec["lat"] if rec["lat"] == rec["lat"] else None,
+                "longitude": rec["lon"] if rec["lon"] == rec["lon"] else None,
                 "repi_km": rec["repi_km"],
                 "rhyp_km": rec["rhyp_km"],
                 "dt_s": rec["dt"],
                 "npts": rec["npts"],
                 "duration_s": rec["duration_s"],
                 "units_raw": rec["units"],
+                "source_format": src,
                 "filter_Hz": f"{FREQ_LOW}-{FREQ_HIGH}",
                 "damping": DAMPING,
                 "PGA_EW_g": round(pga_ew, 6),
                 "PGA_NS_g": round(pga_ns, 6),
                 "PGA_VER_g": round(pga_ver, 6),
-                "PGA_H_geo_g": round(np.sqrt(pga_ew * pga_ns), 6),
+                "PGA_H_geo_g": round(float(np.sqrt(pga_ew * pga_ns)), 6),
                 "Sa_peak_H_geo_g": round(sa_peak, 6),
                 "T_Sa_peak_s": round(t_peak, 4),
                 "quality_flag": quality_flag,
@@ -459,10 +696,10 @@ def process_all() -> None:
                 "signal_csv": str(csv_sig.relative_to(ROOT)),
                 "spectrum_csv": str(csv_sp.relative_to(ROOT)),
                 "source_file": rec["filename"],
+                "mseed_window": rec.get("mseed_window"),
             }
         )
 
-        # MiniSEED opcional para trazabilidad ObsPy
         st = to_obspy_stream(rec, {"ew": ew, "ver": ver, "ns": ns})
         mseed_path = OUT_SENALES / f"{stn}_aceleracion_ajustada.mseed"
         st.write(str(mseed_path), format="MSEED")
@@ -485,6 +722,9 @@ def process_all() -> None:
                         f"Nigam-Jennings (numba), damping={DAMPING}, "
                         f"T=0-{T_MAX}s, dT={DT_SPECTRUM}s"
                     ),
+                    "input_formats": [".ANC", "MiniSEED"],
+                    "mseed_priority": "ANC sobre MiniSEED si ambas existen para la misma estacion",
+                    "mseed_window_s": MSEED_WINDOW_S,
                     "acceleration_units_csv": "cm/s^2 y g",
                     "spectrum_units": "Sa en g; Sv en cm/s; Sd en cm",
                 },
@@ -501,6 +741,7 @@ def process_all() -> None:
     with resum_csv.open("w", newline="", encoding="utf-8") as f:
         fields = [
             "station",
+            "source_format",
             "latitude",
             "longitude",
             "repi_km",
@@ -523,8 +764,10 @@ def process_all() -> None:
     print("\n" + "=" * 72)
     print(f"Estaciones procesadas: {len(catalog)}")
     for c in catalog:
+        repi = c["repi_km"]
+        repi_s = f"{repi:5.1f} km" if isinstance(repi, (int, float)) else "  n/d"
         print(
-            f"  {c['station']:6s}  Repi={c['repi_km']:5.1f} km  "
+            f"  {c['station']:6s}  [{c.get('source_format', '?'):8s}]  Repi={repi_s}  "
             f"PGA_H={c['PGA_H_geo_g']:.4f} g  Sa_peak={c['Sa_peak_H_geo_g']:.4f} g @ T={c['T_Sa_peak_s']} s"
         )
     print(f"\nResumen: {summary_path}")
