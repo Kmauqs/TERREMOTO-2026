@@ -971,6 +971,14 @@ def main() -> None:
         <a href="Espectros/table-Estaciones-Localizacion-PGA.csv">table-Estaciones-Localizacion-PGA.csv</a>
         ({len(rows)} estaciones).
       </p>
+      <figure style="margin:1.25rem 0">
+        <img src="docs/SGC-estaciones-localizacion.jpg" alt="Mapa SGC de localización de las estaciones del sismo SGC2026pqqmro" loading="lazy" />
+        <figcaption>
+          Localización de estaciones — Servicio Geológico Colombiano.
+          Fuente:
+          <a href="docs/SGC%20-%20Sismo%20Generalidades-Estaciones.pdf">SGC - Sismo Generalidades-Estaciones.pdf</a>.
+        </figcaption>
+      </figure>
       {stations_table(rows)}
     </section>
 
