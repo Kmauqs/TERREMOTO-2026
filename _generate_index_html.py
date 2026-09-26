@@ -837,6 +837,16 @@ def main() -> None:
         (FLND, CIRS), coherentes con la severidad del movimiento en el corredor cafetero.
         El ShakeMap SGC reporta, a escala regional, PGA de grilla del orden de ~0.3 g y SA(0.3) hasta ~0.55 g.
       </p>
+      <div class="spectra-grid" style="margin:1.25rem 0">
+        <figure>
+          <img src="docs/USGS-ShakeMap-Intensity.jpeg" alt="Mapa USGS de intensidad macrosísmica, M 7.4 del 10 de agosto de 2026" loading="lazy" />
+          <figcaption>Intensidad macrosísmica (MMI) — USGS ShakeMap, versión 6 (10 ago 2026, M 7.4).</figcaption>
+        </figure>
+        <figure>
+          <img src="docs/USGS-ShakeMap-PGA.jpg" alt="Mapa USGS de aceleración pico del terreno, M 7.4 del 10 de agosto de 2026" loading="lazy" />
+          <figcaption>Aceleración pico del terreno (PGA, %g) — USGS ShakeMap, versión 6 (10 ago 2026, M 7.4).</figcaption>
+        </figure>
+      </div>
       <div class="alert" id="obs-cboca">
         <strong>Observación — estación CBOCA (Pereira):</strong>
         los amplitudes registrados en CBOCA constituyen un <strong>dato atípico</strong>

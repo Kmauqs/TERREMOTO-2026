@@ -23,6 +23,10 @@ El evento corresponde a un sismo profundo de placa, con distancias epicentrales 
 
 Productos oficiales de intensidad instrumental (ShakeMap) incluidos en `SGC-Data/` reportan, a escala regional, PGA máximos de grilla del orden de ~0.3 g y SA(0.3) hasta ~0.55 g (versión automática del mapa).
 
+![Intensidad macrosísmica USGS, M 7.4 del 10 de agosto de 2026](docs/USGS-ShakeMap-Intensity.jpeg)
+
+![PGA USGS, M 7.4 del 10 de agosto de 2026](docs/USGS-ShakeMap-PGA.jpg)
+
 > **Observación — estación CBOCA (Pereira):** los amplitudes registrados en CBOCA (PGA horizontal ≈ 0.04 g) constituyen un **dato atípico** respecto a la atenuación/propagación esperada del sismo y, sobre todo, respecto a los **daños reales evidenciados en Pereira**, ciudad entre las más afectadas por el evento. Existen indicios de que la estación podría estar **defectuosa** o de que el registro no es representativo del movimiento fuerte en el área urbana. **No se recomienda emplear los datos de CBOCA** en análisis estadísticos, ajustes de atenuación, validación de GMPE ni modelaciones detalladas de demanda sísmica. El acelerograma se conserva en el repositorio solo como archivo fuente SGC, claramente marcado como no confiable.
 
 ---
